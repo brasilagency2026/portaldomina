@@ -24,7 +24,7 @@ const Header = () => {
               <Crown className="w-6 h-6 text-primary-foreground" />
             </div>
             <span className="font-display text-2xl font-bold text-gradient-gold">
-              Dominatrix BR
+              BDSMBRAZIL
             </span>
           </Link>
 

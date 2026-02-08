@@ -37,7 +37,7 @@ const Footer = () => {
                 <Crown className="w-6 h-6 text-primary-foreground" />
               </div>
               <span className="font-display text-2xl font-bold text-gradient-gold">
-                Dominatrix BR
+                BDSMBRAZIL
               </span>
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">
@@ -116,7 +116,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {currentYear} Dominatrix BR. Todos os direitos reservados.
+              © {currentYear} BDSMBRAZIL. Todos os direitos reservados.
             </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span className="w-2 h-2 rounded-full bg-primary"></span>
