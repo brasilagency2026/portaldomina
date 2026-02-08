@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   MapPin,
   Filter,
   Search,
   Crown,
-  Star,
   MessageCircle,
   Navigation,
-  X,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
@@ -21,7 +19,6 @@ interface Profile {
   image: string;
   location: string;
   distance: string;
-  rating: number;
   specialties: string[];
   isPremium: boolean;
   availability: string;
@@ -35,7 +32,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile1.jpg",
     location: "São Paulo, SP - Jardins",
     distance: "3.2 km",
-    rating: 4.9,
     specialties: ["Dominação", "Fetiche", "BDSM"],
     isPremium: true,
     availability: "Disponível",
@@ -47,7 +43,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile2.jpg",
     location: "São Paulo, SP - Moema",
     distance: "5.8 km",
-    rating: 4.8,
     specialties: ["Roleplay", "Bondage", "Submissão"],
     isPremium: true,
     availability: "Disponível",
@@ -59,7 +54,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile3.jpg",
     location: "Campinas, SP - Centro",
     distance: "12 km",
-    rating: 4.7,
     specialties: ["Trampling", "Worship", "Humilhação"],
     isPremium: false,
     availability: "Agenda lotada",
@@ -71,7 +65,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile4.jpg",
     location: "Rio de Janeiro, RJ - Copacabana",
     distance: "8.5 km",
-    rating: 5.0,
     specialties: ["Humilhação", "CBT", "Worship"],
     isPremium: true,
     availability: "Disponível",
@@ -83,7 +76,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile1.jpg",
     location: "São Paulo, SP - Pinheiros",
     distance: "4.1 km",
-    rating: 4.6,
     specialties: ["Dominação", "Fetiche"],
     isPremium: false,
     availability: "Disponível",
@@ -95,7 +87,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile2.jpg",
     location: "São Paulo, SP - Vila Madalena",
     distance: "6.3 km",
-    rating: 4.9,
     specialties: ["BDSM", "Roleplay", "Bondage"],
     isPremium: true,
     availability: "Disponível",
@@ -328,90 +319,87 @@ const Explorar = () => {
 
               <div className="space-y-4">
                 {sortedProfiles.map((profile, index) => (
-                  <motion.div
-                    key={profile.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`group p-4 rounded-xl bg-gradient-card border transition-all hover:border-gold/30 ${
-                      profile.isPremium ? "border-gold/30" : "border-border"
-                    }`}
-                  >
-                    <div className="flex gap-4">
-                      {/* Image */}
-                      <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0">
-                        <div
-                          className="absolute inset-0 bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${profile.image})`,
-                            backgroundColor: "hsl(var(--muted))",
-                          }}
-                        />
-                        {profile.isPremium && (
-                          <div className="absolute top-2 left-2">
-                            <Crown className="w-4 h-4 text-gold" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-display text-lg font-semibold truncate group-hover:text-gold transition-colors">
-                            {profile.name}
-                          </h3>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Star className="w-4 h-4 text-gold fill-gold" />
-                            <span className="text-sm font-medium">{profile.rating}</span>
-                          </div>
+                  <Link key={profile.id} to={`/profile/${profile.id}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`group p-4 rounded-xl bg-gradient-card border transition-all hover:border-primary/50 cursor-pointer mb-4 ${
+                        profile.isPremium ? "border-primary/30" : "border-border"
+                      }`}
+                    >
+                      <div className="flex gap-4">
+                        {/* Image */}
+                        <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0">
+                          <div
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${profile.image})`,
+                              backgroundColor: "hsl(var(--muted))",
+                            }}
+                          />
+                          {profile.isPremium && (
+                            <div className="absolute top-2 left-2">
+                              <Crown className="w-4 h-4 text-primary" />
+                            </div>
+                          )}
                         </div>
 
-                        <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5" />
-                          {profile.location} • {profile.distance}
-                        </p>
-
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {profile.specialties.slice(0, 3).map((specialty) => (
-                            <span
-                              key={specialty}
-                              className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
-                            >
-                              {specialty}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`text-xs font-medium ${
-                                profile.availability === "Disponível"
-                                  ? "text-primary"
-                                  : "text-muted-foreground"
-                              }`}
-                            >
-                              {profile.availability}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              • {profile.serviceType}
-                            </span>
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                              {profile.name}
+                            </h3>
                           </div>
-                        </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-2 mt-3">
-                          <Button variant="gold" size="sm" className="flex-1 gap-1.5">
-                            <MessageCircle className="w-4 h-4" />
-                            WhatsApp
-                          </Button>
-                          <Button variant="glass" size="sm" className="gap-1.5">
-                            <Navigation className="w-4 h-4" />
-                          </Button>
+                          <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5" />
+                            {profile.location} • {profile.distance}
+                          </p>
+
+                          <div className="flex flex-wrap gap-1.5 mb-3">
+                            {profile.specialties.slice(0, 3).map((specialty) => (
+                              <span
+                                key={specialty}
+                                className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+                              >
+                                {specialty}
+                              </span>
+                            ))}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`text-xs font-medium ${
+                                  profile.availability === "Disponível"
+                                    ? "text-primary"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                {profile.availability}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                • {profile.serviceType}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-2 mt-3">
+                            <Button variant="neon" size="sm" className="flex-1 gap-1.5">
+                              <MessageCircle className="w-4 h-4" />
+                              WhatsApp
+                            </Button>
+                            <Button variant="glass" size="sm" className="gap-1.5">
+                              <Navigation className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  </Link>
                 ))}
               </div>
 

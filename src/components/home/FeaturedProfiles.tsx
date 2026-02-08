@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Crown, MapPin, Star, MessageCircle, Navigation } from "lucide-react";
+import { Crown, MapPin, MessageCircle, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface Profile {
   id: number;
@@ -8,7 +9,6 @@ interface Profile {
   image: string;
   location: string;
   distance: string;
-  rating: number;
   specialties: string[];
   isPremium: boolean;
 }
@@ -20,7 +20,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile1.jpg",
     location: "São Paulo, SP",
     distance: "3.2 km",
-    rating: 4.9,
     specialties: ["Dominação", "Fetiche", "BDSM"],
     isPremium: true,
   },
@@ -30,7 +29,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile2.jpg",
     location: "São Paulo, SP",
     distance: "5.8 km",
-    rating: 4.8,
     specialties: ["Roleplay", "Bondage"],
     isPremium: true,
   },
@@ -40,7 +38,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile3.jpg",
     location: "Campinas, SP",
     distance: "12 km",
-    rating: 4.7,
     specialties: ["Trampling", "Worship"],
     isPremium: false,
   },
@@ -50,7 +47,6 @@ const mockProfiles: Profile[] = [
     image: "/profiles/profile4.jpg",
     location: "Rio de Janeiro, RJ",
     distance: "8.5 km",
-    rating: 5.0,
     specialties: ["Humilhação", "CBT"],
     isPremium: true,
   },
@@ -58,85 +54,81 @@ const mockProfiles: Profile[] = [
 
 const ProfileCard = ({ profile, index }: { profile: Profile; index: number }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className={`group relative rounded-2xl overflow-hidden ${
-        profile.isPremium ? "premium-glow" : ""
-      }`}
-    >
-      {/* Card Background */}
-      <div className="bg-gradient-card border border-border rounded-2xl overflow-hidden">
-        {/* Image Container */}
-        <div className="relative aspect-[3/4] overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-            style={{
-              backgroundImage: `url(${profile.image})`,
-              backgroundColor: "hsl(var(--muted))",
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+    <Link to={`/profile/${profile.id}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        className={`group relative rounded-2xl overflow-hidden cursor-pointer ${
+          profile.isPremium ? "premium-glow" : ""
+        }`}
+      >
+        {/* Card Background */}
+        <div className="bg-gradient-card border border-border rounded-2xl overflow-hidden transition-all group-hover:border-primary/50">
+          {/* Image Container */}
+          <div className="relative aspect-[3/4] overflow-hidden">
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+              style={{
+                backgroundImage: `url(${profile.image})`,
+                backgroundColor: "hsl(var(--muted))",
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
 
-          {/* Premium Badge */}
-          {profile.isPremium && (
-            <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-gold text-primary-foreground text-xs font-semibold">
-              <Crown className="w-3.5 h-3.5" />
-              Premium
+            {/* Premium Badge */}
+            {profile.isPremium && (
+              <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-xs font-semibold neon-glow">
+                <Crown className="w-3.5 h-3.5" />
+                Premium
+              </div>
+            )}
+
+            {/* Distance Badge */}
+            <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-dark text-xs font-medium">
+              <MapPin className="w-3.5 h-3.5 text-primary" />
+              {profile.distance}
             </div>
-          )}
-
-          {/* Distance Badge */}
-          <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-dark text-xs font-medium">
-            <MapPin className="w-3.5 h-3.5 text-gold" />
-            {profile.distance}
           </div>
 
-          {/* Rating */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-dark text-xs font-medium">
-            <Star className="w-3.5 h-3.5 text-gold fill-gold" />
-            {profile.rating}
-          </div>
-        </div>
+          {/* Content */}
+          <div className="p-5">
+            <h3 className="font-display text-xl font-semibold mb-1 group-hover:text-primary transition-colors">
+              {profile.name}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              {profile.location}
+            </p>
 
-        {/* Content */}
-        <div className="p-5">
-          <h3 className="font-display text-xl font-semibold mb-1 group-hover:text-gold transition-colors">
-            {profile.name}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5" />
-            {profile.location}
-          </p>
+            {/* Specialties */}
+            <div className="flex flex-wrap gap-2 mb-5">
+              {profile.specialties.slice(0, 3).map((specialty) => (
+                <span
+                  key={specialty}
+                  className="px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+                >
+                  {specialty}
+                </span>
+              ))}
+            </div>
 
-          {/* Specialties */}
-          <div className="flex flex-wrap gap-2 mb-5">
-            {profile.specialties.slice(0, 3).map((specialty) => (
-              <span
-                key={specialty}
-                className="px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
-              >
-                {specialty}
-              </span>
-            ))}
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2">
-            <Button variant="gold" size="sm" className="flex-1 gap-1.5">
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </Button>
-            <Button variant="glass" size="sm" className="gap-1.5">
-              <Navigation className="w-4 h-4" />
-              Waze
-            </Button>
+            {/* Actions */}
+            <div className="flex gap-2">
+              <Button variant="neon" size="sm" className="flex-1 gap-1.5">
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp
+              </Button>
+              <Button variant="glass" size="sm" className="gap-1.5">
+                <Navigation className="w-4 h-4" />
+                Waze
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 };
 
