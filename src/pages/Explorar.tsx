@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import GoogleMap from "@/components/explore/GoogleMap";
 
 interface Profile {
   id: number;
@@ -23,6 +24,8 @@ interface Profile {
   isPremium: boolean;
   availability: string;
   serviceType: string;
+  lat: number;
+  lng: number;
 }
 
 const mockProfiles: Profile[] = [
@@ -36,6 +39,8 @@ const mockProfiles: Profile[] = [
     isPremium: true,
     availability: "Disponível",
     serviceType: "Local próprio",
+    lat: -23.5631,
+    lng: -46.6565,
   },
   {
     id: 2,
@@ -47,6 +52,8 @@ const mockProfiles: Profile[] = [
     isPremium: true,
     availability: "Disponível",
     serviceType: "Hotel",
+    lat: -23.6008,
+    lng: -46.6658,
   },
   {
     id: 3,
@@ -58,6 +65,8 @@ const mockProfiles: Profile[] = [
     isPremium: false,
     availability: "Agenda lotada",
     serviceType: "Domicílio",
+    lat: -22.9068,
+    lng: -47.0626,
   },
   {
     id: 4,
@@ -69,6 +78,8 @@ const mockProfiles: Profile[] = [
     isPremium: true,
     availability: "Disponível",
     serviceType: "Local próprio",
+    lat: -22.9711,
+    lng: -43.1823,
   },
   {
     id: 5,
@@ -80,6 +91,8 @@ const mockProfiles: Profile[] = [
     isPremium: false,
     availability: "Disponível",
     serviceType: "Hotel",
+    lat: -23.5667,
+    lng: -46.6914,
   },
   {
     id: 6,
@@ -91,6 +104,8 @@ const mockProfiles: Profile[] = [
     isPremium: true,
     availability: "Disponível",
     serviceType: "Local próprio",
+    lat: -23.5535,
+    lng: -46.6916,
   },
 ];
 
@@ -288,21 +303,18 @@ const Explorar = () => {
         {/* Main Content */}
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Map Placeholder */}
+            {/* Google Map */}
             <div className="lg:w-1/2 xl:w-3/5">
               <div className="sticky top-44 rounded-2xl overflow-hidden border border-border bg-card aspect-[4/3] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
-                <div className="w-full h-full bg-secondary flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <MapPin className="w-16 h-16 text-gold mx-auto mb-4" />
-                    <h3 className="font-display text-xl font-semibold mb-2">
-                      Mapa Interativo
-                    </h3>
-                    <p className="text-muted-foreground text-sm max-w-sm">
-                      O mapa será exibido aqui com a localização das dominatrixes
-                      após a integração com Google Maps API
-                    </p>
-                  </div>
-                </div>
+                <GoogleMap
+                  markers={sortedProfiles.map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    lat: p.lat,
+                    lng: p.lng,
+                    isPremium: p.isPremium,
+                  }))}
+                />
               </div>
             </div>
 
