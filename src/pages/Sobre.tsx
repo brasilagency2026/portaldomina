@@ -8,7 +8,7 @@ const services = [
     icon: ShoppingBag,
     title: "Loja Online",
     description: "Boutique de produtos BDSM com entrega em todo Brasil",
-    link: "https://bdsmbrazil.com/loja",
+    link: "https://bdsmbrazil.com.br/loja",
     linkLabel: "Visitar Loja",
   },
   {
