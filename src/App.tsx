@@ -8,6 +8,7 @@ import Explorar from "./pages/Explorar";
 import Profile from "./pages/Profile";
 import Premium from "./pages/Premium";
 import Sobre from "./pages/Sobre";
+import Contato from "./pages/Contato";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/premium" element={<Premium />} />
           <Route path="/sobre" element={<Sobre />} />
+          <Route path="/contato" element={<Contato />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
