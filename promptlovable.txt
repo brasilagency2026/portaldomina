@@ -1,0 +1,332 @@
+1. VISÃO GERAL DO PROJETO
+Desenvolver um portal web geolocalizado em português brasileiro para profissionais dominatrixes, com sistema de cadastro verificado, geolocalização, pagamentos múltiplos (cripto BRZ, PIX, cartão) e painel administrativo.
+2. FUNCIONALIDADES PRINCIPAIS
+2.1 PORTAL PÚBLICO (Front-end)
+
+Idioma: Português do Brasil (pt-BR)
+Mapa interativo: Integração Google Maps API mostrando dominatrixes por geolocalização
+Filtros de busca:
+
+Raio de distância (5km, 10km, 20km, 50km)
+Especialidades/práticas
+Disponibilidade
+Tipo de atendimento (local próprio, hotel, domicílio)
+Plano (gratuito vs premium)
+
+
+
+2.2 PERFIS DAS DOMINATRIXES
+Plano Gratuito inclui:
+
+Nome artístico/profissional
+Galeria de até 5 fotos
+Descrição/bio (máximo 500 caracteres)
+Especialidades (tags)
+Endereço (cidade/bairro - sem rua específica)
+Botão WhatsApp (link direto: https://wa.me/55[número])
+Botão Waze (link direto para navegação: https://waze.com/ul?ll=[latitude],[longitude]&navigate=yes)
+Endereços de carteiras cripto para receber pagamentos de clientes:
+
+BRZ (Brazilian Digital Token) - via Chainless
+Bitcoin (BTC)
+Ethereum (ETH)
+USDT (TRC20/ERC20)
+PIX (chave PIX)
+Cartão de crédito (link de pagamento personalizado)
+
+
+
+Plano Premium adiciona:
+
+Galeria ilimitada de fotos
+Upload de até 3 vídeos (máximo 2 minutos cada)
+Destaque no mapa dentro do raio de 20km (pin diferenciado, cor especial, aparece primeiro)
+Aparece prioritariamente nas buscas gerais
+Endereço completo com Google Maps embed
+Badge "Premium" no perfil
+Estatísticas de visualizações
+Valor: R$ 49,90/mês
+
+2.3 SISTEMA DE CADASTRO E VERIFICAÇÃO
+Etapa 1 - Registro inicial:
+
+Email
+Senha
+Nome artístico
+Telefone (WhatsApp)
+CPF (criptografado, apenas para verificação)
+
+Etapa 2 - Verificação obrigatória:
+
+Upload de foto do rosto (selfie atual, clara)
+Upload de documento de identidade (RG ou CNH)
+
+Foto deve ser legível
+Sistema valida se pessoa da selfie corresponde ao documento
+Documentos são armazenados de forma segura e criptografada
+Dados pessoais nunca são expostos publicamente
+
+
+Aprovação manual pela equipe (24-48h)
+Status: Pendente → Em análise → Aprovado/Rejeitado
+
+Etapa 3 - Completar perfil:
+
+Fotos profissionais
+Descrição
+Especialidades
+Localização (coordenadas GPS)
+Contatos e informações de pagamento:
+
+WhatsApp
+Carteira BRZ (Chainless)
+Outras carteiras cripto
+Chave PIX
+Link de pagamento cartão
+
+
+
+3. PAINEL ADMINISTRATIVO - DOMINATRIX
+Dashboard com:
+
+Estatísticas de visualizações do perfil
+Número de cliques em WhatsApp/Waze
+Gerenciamento de fotos/vídeos
+Edição de informações
+Gerenciamento de métodos de pagamento:
+
+Adicionar/editar carteira BRZ (Chainless)
+Adicionar/editar chave PIX
+Adicionar/editar link de pagamento com cartão
+Outras carteiras cripto
+
+
+Gerenciamento de assinatura Premium:
+
+Status do plano (Gratuito/Premium)
+Data de vencimento
+Histórico de pagamentos
+Upgrade/downgrade de plano
+
+
+Configurações de privacidade
+Notificações de visualizações (apenas Premium)
+
+4. SISTEMA DE PAGAMENTO DA ASSINATURA PREMIUM
+Opções de pagamento para assinatura Premium (R$ 49,90/mês):
+Opção 1 - Criptomoeda BRZ via Chainless:
+
+Integração com Chainless API
+Pagamento em BRZ (Brazilian Digital Token)
+Conversão automática do valor em BRL para BRZ
+Confirmação automática após blockchain confirmation
+Link de pagamento gerado automaticamente
+
+Opção 2 - PIX:
+
+Integração com Mercado Pago API
+Geração de QR Code PIX
+Confirmação em tempo real
+Chave PIX da plataforma
+
+Opção 3 - Cartão de Crédito:
+
+Integração com Mercado Pago
+Aceita: Visa, Mastercard, Elo, Amex
+Parcelamento em até 3x sem juros (opcional)
+Pagamento recorrente automático (opcional)
+Tokenização segura de cartões
+
+Features do sistema de pagamento:
+
+Múltiplas tentativas de pagamento
+Notificações de vencimento:
+
+7 dias antes
+3 dias antes
+1 dia antes
+No dia do vencimento
+
+
+Período de grace (3 dias após vencimento)
+Downgrade automático para plano gratuito após grace period
+Histórico completo de transações
+Comprovantes em PDF
+
+5. PAINEL ADMINISTRATIVO - SISTEMA
+Para administradores da plataforma:
+
+Verificação de cadastros:
+
+Fila de aprovações pendentes
+Visualização de selfie + documento lado a lado
+Comparação facial
+Botões: Aprovar / Rejeitar (com motivo)
+
+
+Gerenciamento de usuárias (ativar/desativar/suspender)
+Moderação de conteúdo (fotos/vídeos)
+Relatórios financeiros:
+
+Pagamentos recebidos (BRZ, PIX, Cartão)
+Assinaturas ativas/vencidas
+Taxa de conversão gratuito → premium
+Churn rate
+
+
+Estatísticas gerais da plataforma
+Sistema de denúncias/reportes
+Logs de auditoria
+
+6. INTEGRAÇÃO WAZE
+Botão Waze nos perfis:
+
+Disponível apenas quando há localização precisa
+Link formato: https://waze.com/ul?ll=[latitude],[longitude]&navigate=yes
+Abre diretamente no app Waze (mobile) ou web
+Alternativa: Google Maps também disponível
+Ícone identificável do Waze
+
+7. TECNOLOGIAS SUGERIDAS
+Front-end:
+
+React.js ou Next.js
+Google Maps JavaScript API
+Tailwind CSS ou Material-UI
+Responsive design (mobile-first)
+PWA (Progressive Web App)
+
+Back-end:
+
+Node.js (Express) ou Python (Django/Flask)
+PostgreSQL (dados estruturados)
+Redis (cache e sessões)
+API RESTful
+JWT para autenticação
+
+Integrações obrigatórias:
+
+Chainless API (pagamento BRZ)
+Mercado Pago API (PIX + Cartão de crédito)
+Google Maps API (geocoding + embed + directions)
+WhatsApp Business API
+AWS S3 ou Cloudinary (armazenamento mídia)
+Verificação facial (AWS Rekognition, Azure Face API ou similar)
+
+Segurança:
+
+SSL/HTTPS obrigatório
+Criptografia de dados sensíveis (AES-256)
+LGPD compliance total
+PCI DSS compliance (dados de cartão)
+Rate limiting
+CAPTCHA no registro (hCaptcha ou reCAPTCHA)
+2FA opcional para dominatrixes
+
+8. FEATURES DE GEOLOCALIZAÇÃO
+Sistema de destaque Premium (20km):
+
+Quando usuário busca no mapa, perfis Premium aparecem:
+
+Com pin diferenciado (cor dourada/premium)
+Maior no mapa
+Sempre no topo da lista lateral
+Dentro do raio de 20km da localização do usuário
+
+
+Algoritmo de priorização:
+
+Perfis Premium dentro de 20km
+Perfis gratuitos mais próximos
+Todos os demais por distância
+
+
+
+Permissões de localização:
+
+Solicitar localização do usuário (geolocation API)
+Fallback para busca por CEP/cidade
+Salvamento de última localização (cookie/localStorage)
+
+9. COMPLIANCE E LEGAL
+
+Verificação de maioridade obrigatória (18+)
+Termos de uso específicos e claros
+LGPD - Lei Geral de Proteção de Dados:
+
+Consentimento explícito
+Direito ao esquecimento
+Portabilidade de dados
+DPO (Data Protection Officer) designado
+
+
+Política de privacidade detalhada
+Disclaimer legal sobre serviços adultos
+Sistema anti-fraude
+Proteção contra scraping/bots
+Idade mínima warning na homepage
+Cookie consent banner
+
+10. FLUXO DE PAGAMENTO PREMIUM
+Usuária clica em "Assinar Premium":
+
+Escolhe método de pagamento:
+
+ BRZ via Chainless
+ PIX
+ Cartão de Crédito
+
+
+Se BRZ:
+
+Sistema gera endereço de carteira ou link Chainless
+Mostra valor em BRZ equivalente
+Aguarda confirmação blockchain
+Ativa Premium automaticamente
+
+
+Se PIX:
+
+Mercado Pago gera QR Code
+Mostra Copia e Cola
+Confirmação em segundos
+Ativa Premium automaticamente
+
+
+Se Cartão:
+
+Formulário Mercado Pago
+Opção de salvar cartão
+Opção de renovação automática
+Processamento imediato
+Ativa Premium automaticamente
+
+
+Confirmação:
+
+Email de confirmação
+Acesso imediato aos recursos Premium
+Data de vencimento exibida
+
+
+
+11. RECURSOS ADICIONAIS
+
+Sistema de favoritos (usuários podem salvar perfis)
+Compartilhamento de perfil (WhatsApp, Telegram, link direto)
+Blog/Notícias da comunidade
+FAQ completo
+Suporte via WhatsApp/Email
+Sistema de backup diário
+Monitoramento de uptime
+Analytics (Google Analytics 4)
+
+
+OBSERVAÇÕES IMPORTANTES:
+
+Chainless: Verificar documentação oficial da API Chainless para integração correta do BRZ
+Mercado Pago: Usar SDK oficial e ambiente de sandbox para testes
+WAZE: Links deep linking funcionam melhor em mobile
+Moderação: Conteúdo deve ser revisado antes de ir ao ar
+Performance: Otimizar carregamento de imagens (lazy loading, WebP)
+SEO: Implementar meta tags, sitemap, robots.txt
