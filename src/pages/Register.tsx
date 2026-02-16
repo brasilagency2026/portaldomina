@@ -12,13 +12,14 @@ import PricingSection from "@/components/home/PricingSection";
 import CTASection from "@/components/home/CTASection";
 import EcosystemSection from "@/components/home/EcosystemSection";
 import { motion } from "framer-motion";
-import { UserPlus, ShieldCheck } from "lucide-react";
+import { UserPlus, ShieldCheck, MailCheck } from "lucide-react";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -29,15 +30,16 @@ export default function Register() {
       email,
       password,
       options: {
-        data: { nome }
+        data: { nome },
+        emailRedirectTo: `${window.location.origin}/login`
       }
     });
 
     if (error) {
       toast.error("Erro ao cadastrar: " + error.message);
     } else {
-      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
-      navigate("/login");
+      setIsSubmitted(true);
+      toast.success("Cadastro realizado com sucesso!");
     }
     setLoading(false);
   };
@@ -47,7 +49,6 @@ export default function Register() {
       <Header />
       
       <main className="pt-32">
-        {/* Hero Registration Section */}
         <section className="pb-20 px-4">
           <div className="container mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
@@ -66,22 +67,6 @@ export default function Register() {
                 <p className="text-xl text-muted-foreground">
                   Crie seu perfil hoje e comece a ser encontrada por clientes qualificados em sua região.
                 </p>
-                
-                <div className="space-y-4 pt-4">
-                  {[
-                    "Perfil verificado com selo de confiança",
-                    "Painel de controle intuitivo",
-                    "Geolocalização em tempo real",
-                    "Suporte dedicado à profissional"
-                  ].map((item) => (
-                    <div key={item} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-primary" />
-                      </div>
-                      <span className="text-muted-foreground">{item}</span>
-                    </div>
-                  ))}
-                </div>
               </motion.div>
 
               <motion.div
@@ -91,51 +76,63 @@ export default function Register() {
                 <Card className="w-full max-w-md mx-auto glass-dark border-primary/20 shadow-premium">
                   <CardHeader>
                     <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
-                      <UserPlus className="w-6 h-6 text-primary" />
-                      Criar minha conta
+                      {isSubmitted ? <MailCheck className="w-6 h-6 text-green-500" /> : <UserPlus className="w-6 h-6 text-primary" />}
+                      {isSubmitted ? "Verifique seu E-mail" : "Criar minha conta"}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleRegister} className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Nome de Cena</label>
-                        <Input
-                          placeholder="Ex: Domina Hera"
-                          value={nome}
-                          onChange={(e) => setNome(e.target.value)}
-                          required
-                          className="bg-background/50"
-                        />
+                    {isSubmitted ? (
+                      <div className="text-center space-y-6 py-4">
+                        <p className="text-muted-foreground">
+                          Enviamos um link de confirmação para <strong>{email}</strong>. 
+                          Por favor, clique no link para ativar sua conta.
+                        </p>
+                        <Button variant="outline" className="w-full" onClick={() => setIsSubmitted(false)}>
+                          Voltar
+                        </Button>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">E-mail Profissional</label>
-                        <Input
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          className="bg-background/50"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Senha</label>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                          className="bg-background/50"
-                        />
-                      </div>
-                      <Button type="submit" className="w-full bg-gradient-gold h-12 text-lg font-bold mt-4" disabled={loading}>
-                        {loading ? "Processando..." : "Cadastrar Agora"}
-                      </Button>
-                      <p className="text-center text-sm text-muted-foreground mt-4">
-                        Já possui uma conta? <Link to="/login" className="text-primary hover:underline font-semibold">Fazer Login</Link>
-                      </p>
-                    </form>
+                    ) : (
+                      <form onSubmit={handleRegister} className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Nome de Cena</label>
+                          <Input
+                            placeholder="Ex: Domina Hera"
+                            value={nome}
+                            onChange={(e) => setNome(e.target.value)}
+                            required
+                            className="bg-background/50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">E-mail Profissional</label>
+                          <Input
+                            type="email"
+                            placeholder="seu@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="bg-background/50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Senha</label>
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="bg-background/50"
+                          />
+                        </div>
+                        <Button type="submit" className="w-full bg-gradient-gold h-12 text-lg font-bold mt-4" disabled={loading}>
+                          {loading ? "Processando..." : "Cadastrar Agora"}
+                        </Button>
+                        <p className="text-center text-sm text-muted-foreground mt-4">
+                          Já possui uma conta? <Link to="/login" className="text-primary hover:underline font-semibold">Fazer Login</Link>
+                        </p>
+                      </form>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
