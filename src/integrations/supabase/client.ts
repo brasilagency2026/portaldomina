@@ -1,17 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Utilisation des variables d'environnement Vite pour la sécurité
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.warn("Supabase credentials missing. Please check your .env file.");
-}
+// Utilisation des variables d'environnement Vite
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://bmivfqpopjgozwjoustr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtaXZmcXBvcGpnb3p3am91c3RyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNzIyMjgsImV4cCI6MjA4Njg0ODIyOH0.ffHzUWP7Ns85BIY8lqcWk4QaJHujVpQAz2mbXS7w_Ec";
 
 export const supabase = createClient<Database>(
-  SUPABASE_URL || '', 
-  SUPABASE_PUBLISHABLE_KEY || '', 
+  SUPABASE_URL, 
+  SUPABASE_PUBLISHABLE_KEY, 
   {
     auth: {
       storage: localStorage,
