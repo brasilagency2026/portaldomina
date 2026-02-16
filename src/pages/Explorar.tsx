@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MapPin, Filter, Search, Crown, MessageCircle, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Crown, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import GoogleMap from "@/components/explore/GoogleMap";
 import { supabase } from "@/lib/supabase";
+import { MOCK_PROFILES } from "@/lib/mockData";
 
 const Explorar = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
   const [premiumOnly, setPremiumOnly] = useState(false);
 
   useEffect(() => {
@@ -20,19 +20,32 @@ const Explorar = () => {
 
   const fetchProfiles = async () => {
     setLoading(true);
-    let query = supabase
-      .from("perfis")
-      .select("*")
-      .eq("status", "approved");
+    try {
+      let query = supabase
+        .from("perfis")
+        .select("*")
+        .eq("status", "approved");
 
-    if (premiumOnly) {
-      query = query.eq("is_premium", true);
+      if (premiumOnly) {
+        query = query.eq("is_premium", true);
+      }
+
+      const { data, error } = await query.order("is_premium", { ascending: false });
+      
+      if (error || !data || data.length === 0) {
+        // Fallback to mock data if DB is empty or error
+        const filteredMock = premiumOnly 
+          ? MOCK_PROFILES.filter(p => p.is_premium) 
+          : MOCK_PROFILES;
+        setProfiles(filteredMock);
+      } else {
+        setProfiles(data);
+      }
+    } catch (err) {
+      setProfiles(premiumOnly ? MOCK_PROFILES.filter(p => p.is_premium) : MOCK_PROFILES);
+    } finally {
+      setLoading(false);
     }
-
-    const { data, error } = await query.order("is_premium", { ascending: false });
-    
-    if (!error) setProfiles(data || []);
-    setLoading(false);
   };
 
   return (
@@ -102,6 +115,7 @@ const Explorar = () => {
                         <div className="flex gap-4">
                           <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
                             {profile.is_premium && <Crown className="absolute top-2 left-2 w-4 h-4 text-primary z-10" />}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">

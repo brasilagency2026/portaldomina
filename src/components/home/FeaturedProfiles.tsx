@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Crown, MapPin, MessageCircle, Navigation, Loader2 } from "lucide-react";
+import { Crown, MapPin, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { MOCK_PROFILES } from "@/lib/mockData";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
   return (
@@ -18,10 +19,12 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
         <div className="bg-gradient-card border border-primary/30 rounded-2xl overflow-hidden transition-all group-hover:border-primary/50">
           <div className="relative aspect-[3/4] overflow-hidden bg-muted">
             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-            <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-xs font-semibold neon-glow">
-              <Crown className="w-3.5 h-3.5" />
-              Premium
-            </div>
+            {profile.is_premium && (
+              <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-xs font-semibold neon-glow">
+                <Crown className="w-3.5 h-3.5" />
+                Premium
+              </div>
+            )}
           </div>
 
           <div className="p-5">
@@ -59,14 +62,24 @@ const FeaturedProfiles = () => {
 
   useEffect(() => {
     const fetchFeatured = async () => {
-      const { data } = await supabase
-        .from("perfis")
-        .select("*")
-        .eq("is_premium", true)
-        .eq("status", "approved")
-        .limit(4);
-      setProfiles(data || []);
-      setLoading(false);
+      try {
+        const { data } = await supabase
+          .from("perfis")
+          .select("*")
+          .eq("is_premium", true)
+          .eq("status", "approved")
+          .limit(4);
+        
+        if (!data || data.length === 0) {
+          setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
+        } else {
+          setProfiles(data);
+        }
+      } catch (err) {
+        setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
+      } finally {
+        setLoading(false);
+      }
     };
     fetchFeatured();
   }, []);

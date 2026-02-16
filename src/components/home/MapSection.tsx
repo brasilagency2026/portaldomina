@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Loader2, Sparkles } from "lucide-react";
+import { MapPin, Loader2 } from "lucide-react";
 import GoogleMap from "@/components/explore/GoogleMap";
 import { supabase } from "@/lib/supabase";
+import { MOCK_PROFILES } from "@/lib/mockData";
 
 const MapSection = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -10,13 +11,22 @@ const MapSection = () => {
 
   useEffect(() => {
     const fetchProfiles = async () => {
-      const { data, error } = await supabase
-        .from("perfis")
-        .select("*")
-        .eq("status", "approved");
-      
-      if (!error) setProfiles(data || []);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from("perfis")
+          .select("*")
+          .eq("status", "approved");
+        
+        if (error || !data || data.length === 0) {
+          setProfiles(MOCK_PROFILES);
+        } else {
+          setProfiles(data || []);
+        }
+      } catch (err) {
+        setProfiles(MOCK_PROFILES);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProfiles();
   }, []);
