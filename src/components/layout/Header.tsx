@@ -1,11 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Crown, MapPin, User, LogIn } from "lucide-react";
+import { Menu, X, Crown, MapPin, User, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Até logo!");
+    navigate("/");
+  };
 
   const navLinks = [
     { label: "Explorar", href: "/explorar", icon: MapPin },
@@ -44,14 +66,35 @@ const Header = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <LogIn className="w-4 h-4" />
-              Entrar
-            </Button>
-            <Button variant="gold" size="sm" className="gap-2">
-              <User className="w-4 h-4" />
-              Cadastrar
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm" className="gap-2" asChild>
+                  <Link to="/dashboard">
+                    <LayoutDashboard className="w-4 h-4" />
+                    Painel
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2 border-primary/30" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                  Sair
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="gap-2" asChild>
+                  <Link to="/login">
+                    <LogIn className="w-4 h-4" />
+                    Entrar
+                  </Link>
+                </Button>
+                <Button variant="gold" size="sm" className="gap-2" asChild>
+                  <Link to="/register">
+                    <User className="w-4 h-4" />
+                    Cadastrar
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -86,14 +129,25 @@ const Header = () => {
                 </Link>
               ))}
               <div className="flex flex-col gap-3 pt-4 border-t border-border">
-                <Button variant="ghost" className="justify-start gap-2">
-                  <LogIn className="w-4 h-4" />
-                  Entrar
-                </Button>
-                <Button variant="gold" className="justify-start gap-2">
-                  <User className="w-4 h-4" />
-                  Cadastrar
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" /> Painel</Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start gap-2 border-primary/30" onClick={handleLogout}>
+                      <LogOut className="w-4 h-4" /> Sair
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/login"><LogIn className="w-4 h-4" /> Entrar</Link>
+                    </Button>
+                    <Button variant="gold" className="justify-start gap-2" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/register"><User className="w-4 h-4" /> Cadastrar</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

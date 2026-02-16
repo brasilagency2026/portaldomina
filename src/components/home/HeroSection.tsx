@@ -1,8 +1,22 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Search, Shield, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/explorar?q=${encodeURIComponent(searchQuery)}`);
+    } else {
+      navigate("/explorar");
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -63,7 +77,8 @@ const HeroSection = () => {
           </motion.p>
 
           {/* Search Bar */}
-          <motion.div
+          <motion.form
+            onSubmit={handleSearch}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -73,15 +88,17 @@ const HeroSection = () => {
               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gold" />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Digite sua cidade ou bairro..."
                 className="w-full h-14 pl-12 pr-4 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold transition-all"
               />
             </div>
-            <Button variant="gold" size="xl" className="gap-2 shrink-0">
+            <Button type="submit" variant="gold" size="xl" className="gap-2 shrink-0">
               <Search className="w-5 h-5" />
               Buscar
             </Button>
-          </motion.div>
+          </motion.form>
 
           {/* Stats */}
           <motion.div
@@ -104,22 +121,6 @@ const HeroSection = () => {
             ))}
           </motion.div>
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-6 h-10 rounded-full border-2 border-gold/50 flex items-start justify-center p-2"
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-gold" />
-          </motion.div>
-        </motion.div>
       </div>
     </section>
   );
