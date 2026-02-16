@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { supabase } from "@/lib/supabase";
+import { MOCK_PROFILES } from "@/lib/mockData";
 
 const Profile = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,14 +18,26 @@ const Profile = () => {
   }, [id]);
 
   const fetchProfile = async () => {
-    const { data, error } = await supabase
-      .from("perfis")
-      .select("*")
-      .eq("id", id)
-      .single();
-    
-    if (!error) setProfile(data);
-    setLoading(false);
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("perfis")
+        .select("*")
+        .eq("id", id)
+        .single();
+      
+      if (error || !data) {
+        const mock = MOCK_PROFILES.find(p => p.id === id);
+        setProfile(mock);
+      } else {
+        setProfile(data);
+      }
+    } catch (err) {
+      const mock = MOCK_PROFILES.find(p => p.id === id);
+      setProfile(mock);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin w-12 h-12 text-primary" /></div>;
@@ -42,6 +55,15 @@ const Profile = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-border bg-muted">
+                {profile.foto_url ? (
+                  <img 
+                    src={profile.foto_url} 
+                    alt={profile.nome}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
+                )}
                 {profile.is_premium && <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-sm font-semibold neon-glow"><Crown className="w-4 h-4" /> Premium</div>}
               </div>
             </div>

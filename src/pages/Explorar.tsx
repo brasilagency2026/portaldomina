@@ -33,7 +33,6 @@ const Explorar = () => {
       const { data, error } = await query.order("is_premium", { ascending: false });
       
       if (error || !data || data.length === 0) {
-        // Fallback to mock data if DB is empty or error
         const filteredMock = premiumOnly 
           ? MOCK_PROFILES.filter(p => p.is_premium) 
           : MOCK_PROFILES;
@@ -114,6 +113,15 @@ const Explorar = () => {
                       >
                         <div className="flex gap-4">
                           <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
+                            {profile.foto_url ? (
+                              <img 
+                                src={profile.foto_url} 
+                                alt={profile.nome}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
+                            )}
                             {profile.is_premium && <Crown className="absolute top-2 left-2 w-4 h-4 text-primary z-10" />}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                           </div>

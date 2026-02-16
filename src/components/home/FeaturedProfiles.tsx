@@ -18,6 +18,15 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
       >
         <div className="bg-gradient-card border border-primary/30 rounded-2xl overflow-hidden transition-all group-hover:border-primary/50">
           <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+            {profile.foto_url ? (
+              <img 
+                src={profile.foto_url} 
+                alt={profile.nome}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
             {profile.is_premium && (
               <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-xs font-semibold neon-glow">
