@@ -2,9 +2,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/home/HeroSection";
 import FeaturedProfiles from "@/components/home/FeaturedProfiles";
-import FeaturesSection from "@/components/home/FeaturesSection";
-import PricingSection from "@/components/home/PricingSection";
-import CTASection from "@/components/home/CTASection";
+import MapSection from "@/components/home/MapSection";
 
 const Index = () => {
   return (
@@ -13,9 +11,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <FeaturedProfiles />
-        <FeaturesSection />
-        <PricingSection />
-        <CTASection />
+        <MapSection />
       </main>
       <Footer />
     </div>
