@@ -1,34 +1,34 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { motion } from "framer-motion";
-import { Crown, ShoppingBag, Bot, MessageSquare, MapPin, Shield, Users, ExternalLink } from "lucide-react";
+import { ShoppingBag, Bed, Bot, MessageSquare, MapPin, Shield, Users, ExternalLink } from "lucide-react";
 
 const services = [
   {
     icon: ShoppingBag,
     title: "Loja Online",
-    description: "Boutique de produtos BDSM com entrega em todo Brasil",
+    description: "Boutique completa com mais de 1500 acessórios BDSM e entrega em todo Brasil.",
     link: "https://bdsmbrazil.com.br/loja",
     linkLabel: "Visitar Loja",
   },
   {
-    icon: Crown,
+    icon: Bed,
     title: "Portal dos Motéis BDSM",
-    description: "Encontre motéis BDSM verificados em todo Brasil",
+    description: "Encontre motéis com suítes temáticas BDSM verificadas em todo o Brasil.",
     link: "https://moteis-bdsm.bdsmbrazil.com.br",
     linkLabel: "Ver Motéis",
   },
   {
     icon: Bot,
-    title: "Chatbot IA",
-    description: "Converse com uma dominatrix virtual sem censura, powered by IA",
-    link: "https://dominadoravirtual.bdsmbrazil.com.br",
+    title: "Domina Virtual AI",
+    description: "Converse com nossa inteligência artificial dominatrix sem censura.",
+    link: "https://dominavirtual.bdsmbrazil.com.br",
     linkLabel: "Experimentar",
   },
   {
     icon: MessageSquare,
     title: "Anúncios Anônimos",
-    description: "Serviço de classificados anônimos via aplicativo Session",
+    description: "Serviço de classificados anônimos via aplicativo Session para total privacidade.",
     link: "https://anuncios-bdsm.bdsmbrazil.com.br",
     linkLabel: "Saiba Mais",
   },

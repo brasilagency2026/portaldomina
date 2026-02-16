@@ -10,6 +10,7 @@ import Footer from "@/components/layout/Footer";
 import FeaturesSection from "@/components/home/FeaturesSection";
 import PricingSection from "@/components/home/PricingSection";
 import CTASection from "@/components/home/CTASection";
+import EcosystemSection from "@/components/home/EcosystemSection";
 import { motion } from "framer-motion";
 import { UserPlus, ShieldCheck } from "lucide-react";
 
@@ -142,7 +143,7 @@ export default function Register() {
           </div>
         </section>
 
-        {/* Informational Sections moved from Home */}
+        <EcosystemSection />
         <FeaturesSection />
         <PricingSection />
         <CTASection />
