@@ -28,8 +28,8 @@ const plans = [
     description: "Máxima visibilidade",
     features: [
       "Tudo do plano Gratuito",
-      "Galeria ilimitada de fotos",
-      "Até 3 vídeos (2 min cada)",
+      "Galeria de até 20 fotos",
+      "Até 2 vídeos (2 min cada)",
       "Destaque no mapa (raio 20km)",
       "Prioridade nas buscas",
       "Endereço completo com Google Maps",

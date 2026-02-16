@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 const premiumFeatures = [
   { icon: MapPin, title: "Destaque no Mapa", desc: "Apareça em destaque no mapa interativo num raio de 20km da sua localização." },
   { icon: Zap, title: "Prioridade nas Buscas", desc: "Seu perfil aparece sempre no topo dos resultados de busca." },
-  { icon: Image, title: "Galeria Ilimitada", desc: "Publique quantas fotos quiser no seu perfil profissional." },
-  { icon: Video, title: "Até 3 Vídeos", desc: "Adicione até 3 vídeos de 2 minutos cada para mostrar seu trabalho." },
+  { icon: Image, title: "Galeria de 20 Fotos", desc: "Publique até 20 fotos no seu perfil profissional." },
+  { icon: Video, title: "Até 2 Vídeos", desc: "Adicione até 2 vídeos de 2 minutos cada para mostrar seu trabalho." },
   { icon: BarChart3, title: "Estatísticas", desc: "Acompanhe visualizações, cliques e interações com seu perfil." },
   { icon: Bell, title: "Notificações", desc: "Receba alertas em tempo real quando alguém visualizar seu perfil." },
   { icon: Eye, title: "Endereço Completo", desc: "Exiba seu endereço completo com integração Google Maps." },
@@ -17,13 +17,13 @@ const premiumFeatures = [
 
 const comparison = [
   { feature: "Perfil básico", free: true, premium: true },
-  { feature: "Até 5 fotos", free: true, premium: false, premiumLabel: "Ilimitadas" },
+  { feature: "Até 5 fotos", free: true, premium: false, premiumLabel: "Até 20 fotos" },
   { feature: "Bio de até 500 caracteres", free: true, premium: true },
   { feature: "Botão WhatsApp", free: true, premium: true },
   { feature: "Botão Waze", free: true, premium: true },
   { feature: "Carteiras de pagamento", free: true, premium: true },
-  { feature: "Galeria ilimitada", free: false, premium: true },
-  { feature: "Até 3 vídeos", free: false, premium: true },
+  { feature: "Galeria de 20 fotos", free: false, premium: true },
+  { feature: "Até 2 vídeos", free: false, premium: true },
   { feature: "Destaque no mapa (20km)", free: false, premium: true },
   { feature: "Prioridade nas buscas", free: false, premium: true },
   { feature: "Endereço completo + Maps", free: false, premium: true },
