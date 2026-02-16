@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Crown, MapPin, User, LogIn, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, Crown, MapPin, User, LogIn, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -9,15 +9,38 @@ import { toast } from "sonner";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        const { data } = await supabase
+          .from("perfis")
+          .select("role")
+          .eq("id", currentUser.id)
+          .single();
+        
+        setIsAdmin(data?.role === 'admin');
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (!currentUser) {
+        setIsAdmin(false);
+      } else {
+        checkUser();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -68,6 +91,14 @@ const Header = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
+                {isAdmin && (
+                  <Button variant="ghost" size="sm" className="gap-2 text-primary" asChild>
+                    <Link to="/admin">
+                      <ShieldCheck className="w-4 h-4" />
+                      Admin
+                    </Link>
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" className="gap-2" asChild>
                   <Link to="/dashboard">
                     <LayoutDashboard className="w-4 h-4" />
@@ -131,6 +162,11 @@ const Header = () => {
               <div className="flex flex-col gap-3 pt-4 border-t border-border">
                 {user ? (
                   <>
+                    {isAdmin && (
+                      <Button variant="ghost" className="justify-start gap-2 text-primary" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/admin"><ShieldCheck className="w-4 h-4" /> Admin</Link>
+                      </Button>
+                    )}
                     <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" /> Painel</Link>
                     </Button>
