@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 interface MapMarker {
-  id: number;
+  id: number | string;
   name: string;
   lat: number;
   lng: number;
@@ -11,7 +11,7 @@ interface MapMarker {
 
 interface GoogleMapProps {
   markers: MapMarker[];
-  onMarkerClick?: (id: number) => void;
+  onMarkerClick?: (id: number | string) => void;
 }
 
 const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
@@ -85,10 +85,20 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       });
 
       const infoWindow = new google.maps.InfoWindow({
-        content: `<div style="color:#1a1a2e;font-weight:600;font-size:14px;">${m.isPremium ? "👑 " : ""}${m.name}</div>`,
+        content: `
+          <div style="color:#1a1a2e;padding:8px;min-width:150px;font-family:sans-serif;">
+            <div style="font-weight:700;font-size:16px;margin-bottom:10px;color:#000;">
+              ${m.isPremium ? "👑 " : ""}${m.name}
+            </div>
+            <a href="/profile/${m.id}" style="display:block;background:#E11D48;color:white;text-align:center;padding:8px 12px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;transition:background 0.2s;">
+              Ver Perfil Completo
+            </a>
+          </div>
+        `,
       });
 
       marker.addListener("click", () => {
+        // Close other info windows if needed (optional)
         infoWindow.open(mapInstanceRef.current!, marker);
         onMarkerClick?.(m.id);
       });
