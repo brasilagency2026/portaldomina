@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Crown, MessageCircle, Loader2, Filter, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
@@ -32,6 +32,7 @@ const Explorar = () => {
   const [premiumOnly, setPremiumOnly] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfiles();
@@ -50,7 +51,6 @@ const Explorar = () => {
       }
 
       if (selectedServices.length > 0) {
-        // Filtra perfis que contenham TODOS os serviços selecionados
         query = query.contains('servicos', selectedServices);
       }
 
@@ -96,7 +96,6 @@ const Explorar = () => {
       <Header />
       
       <main className="pt-20">
-        {/* Search & Filter Bar */}
         <div className="glass-dark border-b border-border sticky top-20 z-40">
           <div className="container mx-auto px-4 py-4">
             <div className="flex flex-col lg:flex-row gap-4 items-center">
@@ -168,10 +167,10 @@ const Explorar = () => {
 
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Map Column */}
             <div className="lg:w-1/2 xl:w-3/5">
               <div className="sticky top-44 rounded-2xl overflow-hidden border border-border bg-card aspect-[4/3] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                 <GoogleMap
+                  onMarkerClick={(id) => navigate(`/profile/${id}`)}
                   markers={profiles.map((p) => ({
                     id: p.id,
                     name: p.nome,
@@ -183,7 +182,6 @@ const Explorar = () => {
               </div>
             </div>
 
-            {/* List Column */}
             <div className="lg:w-1/2 xl:w-2/5">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-display text-2xl font-bold">

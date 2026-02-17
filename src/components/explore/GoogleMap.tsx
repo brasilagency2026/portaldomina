@@ -1,5 +1,6 @@
 /// <reference types="google.maps" />
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface MapMarker {
   id: number | string;
@@ -19,6 +20,7 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkGoogleMaps = () => {
@@ -63,7 +65,6 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   useEffect(() => {
     if (!mapInstanceRef.current || !isLoaded) return;
 
-    // Clear old markers
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
@@ -87,9 +88,11 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       const infoWindow = new google.maps.InfoWindow({
         content: `
           <div style="color:#1a1a2e;padding:8px;min-width:150px;font-family:sans-serif;">
-            <div style="font-weight:700;font-size:16px;margin-bottom:10px;color:#000;">
-              ${m.isPremium ? "👑 " : ""}${m.name}
-            </div>
+            <a href="/profile/${m.id}" style="text-decoration:none; color:inherit;">
+              <div style="font-weight:700;font-size:16px;margin-bottom:10px;color:#000; cursor:pointer;">
+                ${m.isPremium ? "👑 " : ""}${m.name}
+              </div>
+            </a>
             <a href="/profile/${m.id}" style="display:block;background:#E11D48;color:white;text-align:center;padding:8px 12px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;transition:background 0.2s;">
               Ver Perfil Completo
             </a>
@@ -98,9 +101,10 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       });
 
       marker.addListener("click", () => {
-        // Close other info windows if needed (optional)
         infoWindow.open(mapInstanceRef.current!, marker);
-        onMarkerClick?.(m.id);
+        if (onMarkerClick) {
+          onMarkerClick(m.id);
+        }
       });
 
       bounds.extend({ lat: m.lat, lng: m.lng });

@@ -4,10 +4,12 @@ import { MapPin, Loader2 } from "lucide-react";
 import GoogleMap from "@/components/explore/GoogleMap";
 import { supabase } from "@/lib/supabase";
 import { MOCK_PROFILES } from "@/lib/mockData";
+import { useNavigate } from "react-router-dom";
 
 const MapSection = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -33,7 +35,6 @@ const MapSection = () => {
 
   return (
     <section className="py-24 bg-background relative overflow-hidden">
-      {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-4 relative z-10">
@@ -65,6 +66,7 @@ const MapSection = () => {
             </div>
           ) : (
             <GoogleMap
+              onMarkerClick={(id) => navigate(`/profile/${id}`)}
               markers={profiles.map((p) => ({
                 id: p.id,
                 name: p.nome,
