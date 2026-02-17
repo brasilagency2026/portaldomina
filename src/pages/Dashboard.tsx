@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
+import { Link } from "react-router-dom";
 import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Trash2, Home, Hotel, Car, Plane, PartyPopper, Loader2, Upload, ShieldCheck, Key } from "lucide-react";
 
 const LISTA_SERVICOS = [
@@ -43,13 +44,12 @@ export default function Dashboard() {
     fetchPerfil();
   }, []);
 
-  // Inicializa o Autocomplete do Google
   useEffect(() => {
     if (!loading && locationInputRef.current && window.google) {
       autocompleteRef.current = new google.maps.places.Autocomplete(locationInputRef.current, {
         componentRestrictions: { country: "br" },
         fields: ["formatted_address", "geometry"],
-        types: ["(cities)"] // Foca em cidades para manter a privacidade, ou remova para permitir bairros
+        types: ["(cities)"]
       });
 
       autocompleteRef.current.addListener("place_changed", () => {
@@ -212,13 +212,23 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto pt-32 px-4 pb-20">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <h1 className="text-3xl font-bold text-gradient-gold">Painel de Controle</h1>
-          {perfil.is_premium && (
-            <Badge className="bg-gradient-gold gap-1.5 py-1.5 px-4">
-              <Crown className="w-4 h-4" /> Assinatura Premium Ativa
-            </Badge>
-          )}
+          <div className="flex flex-wrap gap-3">
+            {perfil.role === 'admin' && (
+              <Button variant="outline" className="gap-2 border-primary/50 text-primary" asChild>
+                <Link to="/admin">
+                  <ShieldCheck className="w-4 h-4" />
+                  Acessar Admin
+                </Link>
+              </Button>
+            )}
+            {perfil.is_premium && (
+              <Badge className="bg-gradient-gold gap-1.5 py-1.5 px-4">
+                <Crown className="w-4 h-4" /> Assinatura Premium Ativa
+              </Badge>
+            )}
+          </div>
         </div>
 
         <Tabs defaultValue="perfil" className="space-y-8">
