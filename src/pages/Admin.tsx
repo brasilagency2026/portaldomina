@@ -22,7 +22,8 @@ import {
   MoreHorizontal,
   EyeOff,
   Eye,
-  Loader2
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -43,6 +44,7 @@ export default function Admin() {
   const [payments, setPayments] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -70,6 +72,10 @@ export default function Admin() {
         .eq("id", user.id)
         .single();
       
+      if (error) {
+        console.error("Erro ao verificar role:", error);
+      }
+      
       const isAd = data?.role === 'admin';
       setIsAdmin(isAd);
       return isAd;
@@ -79,13 +85,33 @@ export default function Admin() {
   };
 
   const fetchData = async () => {
+    setRefreshing(true);
     try {
-      const { data: pData } = await supabase.from("perfis").select("*").order('created_at', { ascending: false });
-      const { data: payData } = await supabase.from("pagamentos").select("*, perfis(nome)").order('created_at', { ascending: false });
+      const { data: pData, error: pError } = await supabase
+        .from("perfis")
+        .select("*")
+        .order('created_at', { ascending: false });
+      
+      if (pError) throw pError;
+
+      const { data: payData, error: payError } = await supabase
+        .from("pagamentos")
+        .select("*, perfis(nome)")
+        .order('created_at', { ascending: false });
+      
+      if (payError) console.warn("Erro ao buscar pagamentos (pode ser que a tabela não exista):", payError);
+
       setProfiles(pData || []);
       setPayments(payData || []);
-    } catch (err) {
+      
+      if (pData) {
+        toast.success(`${pData.length} perfis carregados.`);
+      }
+    } catch (err: any) {
       console.error("Erro ao buscar dados:", err);
+      toast.error("Erro ao carregar dados: " + err.message);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -95,6 +121,8 @@ export default function Admin() {
       const statusMsg = status === 'paused' ? 'pausado (invisível)' : status === 'approved' ? 'ativado (visível)' : status;
       toast.success(`Perfil ${statusMsg} com sucesso!`);
       fetchData();
+    } else {
+      toast.error("Erro ao atualizar status.");
     }
   };
 
@@ -166,7 +194,16 @@ export default function Admin() {
             <h1 className="text-3xl font-bold text-gradient-gold">Administração Central</h1>
             <p className="text-muted-foreground">Gerencie inscrições, visibilidade e usuários.</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchData}>Atualizar Dados</Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchData} 
+            disabled={refreshing}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? "Atualizando..." : "Atualizar Dados"}
+          </Button>
         </div>
         
         <Tabs defaultValue="profiles" className="space-y-6">
@@ -228,8 +265,17 @@ export default function Admin() {
             </div>
 
             <div className="space-y-4">
-              {filteredProfiles.length === 0 ? (
-                <p className="text-center py-10 text-muted-foreground">Nenhum perfil encontrado com esses filtros.</p>
+              {refreshing ? (
+                <div className="flex justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : filteredProfiles.length === 0 ? (
+                <div className="text-center py-20 glass-dark rounded-2xl border border-dashed border-border">
+                  <p className="text-muted-foreground">Nenhum perfil encontrado.</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Dica: Se uma profissional acabou de se cadastrar, ela pode precisar fazer o primeiro login para que o perfil seja criado.
+                  </p>
+                </div>
               ) : (
                 filteredProfiles.map((p) => (
                   <Card key={p.id} className={`glass-dark border-l-4 transition-all ${
@@ -263,7 +309,6 @@ export default function Admin() {
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        {/* Botões de Ação Direta */}
                         {p.status === 'pending' ? (
                           <>
                             <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white gap-1" onClick={() => handleStatus(p.id, 'approved')}>
