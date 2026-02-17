@@ -21,7 +21,8 @@ import {
   Clock,
   MoreHorizontal,
   EyeOff,
-  Eye
+  Eye,
+  Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -40,28 +41,44 @@ import {
 export default function Admin() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    checkAdmin();
-    fetchData();
+    const initAdmin = async () => {
+      const isAd = await checkAdmin();
+      if (isAd) {
+        await fetchData();
+      }
+      setLoading(false);
+    };
+    initAdmin();
   }, []);
 
   const checkAdmin = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data } = await supabase.from("perfis").select("role").eq("id", user.id).single();
-      if (data?.role === 'admin') setIsAdmin(true);
+      setUserId(user.id);
+      const { data, error } = await supabase
+        .from("perfis")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      
+      const isAd = data?.role === 'admin';
+      setIsAdmin(isAd);
+      return isAd;
     }
+    setIsAdmin(false);
+    return false;
   };
 
   const fetchData = async () => {
-    setLoading(true);
     try {
       const { data: pData } = await supabase.from("perfis").select("*").order('created_at', { ascending: false });
       const { data: payData } = await supabase.from("pagamentos").select("*, perfis(nome)").order('created_at', { ascending: false });
@@ -69,8 +86,6 @@ export default function Admin() {
       setPayments(payData || []);
     } catch (err) {
       console.error("Erro ao buscar dados:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -111,14 +126,30 @@ export default function Admin() {
 
   const pendingCount = profiles.filter(p => p.status === 'pending').length;
 
-  if (loading && !profiles.length) return <div className="min-h-screen flex items-center justify-center">Carregando painel administrativo...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      <p className="text-muted-foreground">Verificando credenciais de administrador...</p>
+    </div>
+  );
   
-  if (!isAdmin) return (
-    <div className="min-h-screen flex items-center justify-center text-center flex-col gap-4">
-      <ShieldAlert className="w-16 h-16 text-destructive" />
-      <h1 className="text-2xl font-bold">Acesso Negado</h1>
-      <p>Você não tem permissão para acessar esta área.</p>
-      <Button asChild variant="outline"><a href="/">Voltar para Home</a></Button>
+  if (isAdmin === false) return (
+    <div className="min-h-screen flex items-center justify-center text-center flex-col gap-6 px-4">
+      <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
+        <ShieldAlert className="w-10 h-10 text-destructive" />
+      </div>
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">Acesso Negado</h1>
+        <p className="text-muted-foreground max-w-md">
+          Você não tem permissão de administrador. Certifique-se de que sua conta tem a função <code className="bg-secondary px-1 rounded">admin</code> na tabela de perfis.
+        </p>
+        {userId && (
+          <p className="text-xs text-muted-foreground mt-4">
+            Seu ID de usuário: <span className="font-mono select-all">{userId}</span>
+          </p>
+        )}
+      </div>
+      <Button asChild variant="outline" size="lg"><a href="/">Voltar para Home</a></Button>
     </div>
   );
 
