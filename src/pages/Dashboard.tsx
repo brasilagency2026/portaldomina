@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
-import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Plus, Trash2, Home, Hotel, Car, Plane, PartyPopper, AlertCircle } from "lucide-react";
+import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Plus, Trash2, Home, Hotel, Car, Plane, PartyPopper, Loader2 } from "lucide-react";
 
 const LISTA_SERVICOS = [
   "Bondage", "Spanking", "CBT", "Foot Worship", "Roleplay", "Sissy Training", 
@@ -41,13 +41,40 @@ export default function Dashboard() {
   const fetchPerfil = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase.from("perfis").select("*").eq("id", user.id).single();
-        if (error) throw error;
-        setPerfil(data);
+      if (!user) return;
+
+      // Tentar buscar o perfil
+      let { data, error } = await supabase
+        .from("perfis")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      // Se não existir, criar um perfil básico automaticamente
+      if (!data) {
+        const { data: newProfile, error: createError } = await supabase
+          .from("perfis")
+          .insert([
+            { 
+              id: user.id, 
+              email: user.email, 
+              nome: user.user_metadata?.nome || "Nova Profissional",
+              status: 'pending',
+              role: 'user'
+            }
+          ])
+          .select()
+          .single();
+        
+        if (createError) throw createError;
+        data = newProfile;
+        toast.info("Perfil inicial criado com sucesso!");
       }
+
+      setPerfil(data);
     } catch (err) {
-      console.error("Erro ao carregar perfil:", err);
+      console.error("Erro ao carregar/criar perfil:", err);
+      toast.error("Erro ao carregar seus dados.");
     } finally {
       setLoading(false);
     }
@@ -100,17 +127,20 @@ export default function Dashboard() {
     setPerfil({ ...perfil, fotos: updated });
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      <p className="text-muted-foreground">Carregando seu painel...</p>
+    </div>
+  );
 
   if (!perfil) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto pt-32 px-4 text-center">
-          <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Perfil não encontrado</h1>
-          <p className="text-muted-foreground mb-6">Ocorreu un erro ao carregar seus dados. Tente sair e entrar novamente.</p>
-          <Button onClick={() => supabase.auth.signOut()}>Sair da conta</Button>
+          <h1 className="text-2xl font-bold mb-2">Erro ao carregar perfil</h1>
+          <Button onClick={() => window.location.reload()}>Tentar Novamente</Button>
         </div>
       </div>
     );
@@ -236,7 +266,7 @@ export default function Dashboard() {
               <CardContent className="space-y-6">
                 <div className="flex gap-2">
                   <Input 
-                    placeholder="Cole a URL da imagem ici..." 
+                    placeholder="Cole a URL da imagem aqui..." 
                     value={newPhotoUrl}
                     onChange={e => setNewPhotoUrl(e.target.value)}
                   />
