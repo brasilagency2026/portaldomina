@@ -12,10 +12,8 @@ const Footer = () => {
       { label: "Para Profissionais", href: "/para-profissionais" },
     ],
     suporte: [
-      { label: "Central de Ajuda", href: "/ajuda" },
-      { label: "Contato", href: "/contato" },
       { label: "FAQ", href: "/faq" },
-      { label: "Denunciar", href: "/denunciar" },
+      { label: "Contato", href: "/contato" },
     ],
     legal: [
       { label: "Termos de Uso", href: "/termos" },
