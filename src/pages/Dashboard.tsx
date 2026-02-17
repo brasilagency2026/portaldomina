@@ -3,13 +3,13 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
-import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Plus, Trash2, Home, Hotel, Car, Plane, PartyPopper, Loader2, Upload } from "lucide-react";
+import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Trash2, Home, Hotel, Car, Plane, PartyPopper, Loader2, Upload, ShieldCheck, Key } from "lucide-react";
 
 const LISTA_SERVICOS = [
   "Bondage", "Spanking", "CBT", "Foot Worship", "Roleplay", "Sissy Training", 
@@ -34,6 +34,8 @@ export default function Dashboard() {
   const [perfil, setPerfil] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     fetchPerfil();
@@ -87,6 +89,27 @@ export default function Dashboard() {
     else toast.success("Perfil atualizado com sucesso!");
   };
 
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      toast.error("Erro ao atualizar senha: " + error.message);
+    } else {
+      toast.success("Senha atualizada com sucesso!");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+  };
+
   const toggleServico = (servico: string) => {
     if (!perfil) return;
     const current = perfil.servicos || [];
@@ -124,19 +147,16 @@ export default function Dashboard() {
         return;
       }
 
-      // Upload vers Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('profiles')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      // Récupérer l'URL publique
       const { data: { publicUrl } } = supabase.storage
         .from('profiles')
         .getPublicUrl(filePath);
 
-      // Mettre à jour l'état local
       const updatedFotos = [...currentFotos, publicUrl];
       setPerfil({ ...perfil, fotos: updatedFotos });
       
@@ -145,7 +165,6 @@ export default function Dashboard() {
       toast.error("Erro no upload: " + error.message);
     } finally {
       setUploading(false);
-      // Reset input
       event.target.value = '';
     }
   };
@@ -322,6 +341,80 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="seguranca">
+            <div className="grid lg:grid-cols-2 gap-8">
+              <Card className="glass-dark">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Key className="w-5 h-5 text-primary" />
+                    <CardTitle>Alterar Senha</CardTitle>
+                  </div>
+                  <CardDescription>Mantenha sua conta segura atualizando sua senha regularmente.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Nova Senha</label>
+                      <Input 
+                        type="password" 
+                        placeholder="Mínimo 6 caracteres" 
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Confirmar Nova Senha</label>
+                      <Input 
+                        type="password" 
+                        placeholder="Repita a nova senha" 
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full bg-gradient-gold">Atualizar Senha</Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-dark">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    <CardTitle>Privacidade da Conta</CardTitle>
+                  </div>
+                  <CardDescription>Gerencie como seu perfil é exibido para os visitantes.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 border border-border">
+                    <div>
+                      <p className="font-medium">Ocultar Perfil Temporariamente</p>
+                      <p className="text-xs text-muted-foreground">Seu perfil não aparecerá nas buscas enquanto estiver oculto.</p>
+                    </div>
+                    <Checkbox 
+                      checked={perfil.status === 'paused'}
+                      onCheckedChange={async (checked) => {
+                        const newStatus = checked ? 'paused' : 'approved';
+                        const { error } = await supabase.from("perfis").update({ status: newStatus }).eq("id", perfil.id);
+                        if (!error) {
+                          setPerfil({ ...perfil, status: newStatus });
+                          toast.success(checked ? "Perfil ocultado com sucesso." : "Perfil visível novamente.");
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/10">
+                    <p className="font-medium text-destructive">Zona de Perigo</p>
+                    <p className="text-xs text-muted-foreground mb-4">Ao excluir sua conta, todos os seus dados e fotos serão removidos permanentemente.</p>
+                    <Button variant="destructive" size="sm" className="w-full">Excluir Minha Conta</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
