@@ -1,22 +1,41 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MapPin, Crown, MessageCircle, Loader2 } from "lucide-react";
+import { MapPin, Crown, MessageCircle, Loader2, Filter, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import GoogleMap from "@/components/explore/GoogleMap";
 import { supabase } from "@/lib/supabase";
 import { MOCK_PROFILES } from "@/lib/mockData";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const LISTA_SERVICOS = [
+  "Bondage", "Spanking", "CBT", "Foot Worship", "Roleplay", "Sissy Training", 
+  "Pegging", "Medical Play", "Wax Play", "Sensory Deprivation", 
+  "Facesitting", "Trampling", "Humilhação Verbal", 
+  "Dominação Financeira", "Fetiche em Couro", 
+  "Fetiche em Látex", "Crossdressing", "Eletroestimulação", "Agulhamento", 
+  "Puppy Play", "Ageplay", "Breath Play", "Fire Play", 
+  "Knife Play", "Blood Play", "Caning",
+  "Chuva dourada", "Chuva marrom", "Ballbusting"
+];
 
 const Explorar = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [premiumOnly, setPremiumOnly] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchProfiles();
-  }, [premiumOnly]);
+  }, [premiumOnly, selectedServices]);
 
   const fetchProfiles = async () => {
     setLoading(true);
@@ -30,21 +49,46 @@ const Explorar = () => {
         query = query.eq("is_premium", true);
       }
 
+      if (selectedServices.length > 0) {
+        // Filtra perfis que contenham TODOS os serviços selecionados
+        query = query.contains('servicos', selectedServices);
+      }
+
       const { data, error } = await query.order("is_premium", { ascending: false });
       
       if (error || !data || data.length === 0) {
-        const filteredMock = premiumOnly 
+        let filteredMock = premiumOnly 
           ? MOCK_PROFILES.filter(p => p.is_premium) 
           : MOCK_PROFILES;
+        
+        if (selectedServices.length > 0) {
+          filteredMock = filteredMock.filter(p => 
+            selectedServices.every(s => p.servicos?.includes(s))
+          );
+        }
         setProfiles(filteredMock);
       } else {
         setProfiles(data);
       }
     } catch (err) {
-      setProfiles(premiumOnly ? MOCK_PROFILES.filter(p => p.is_premium) : MOCK_PROFILES);
+      let filteredMock = premiumOnly ? MOCK_PROFILES.filter(p => p.is_premium) : MOCK_PROFILES;
+      if (selectedServices.length > 0) {
+        filteredMock = filteredMock.filter(p => 
+          selectedServices.every(s => p.servicos?.includes(s))
+        );
+      }
+      setProfiles(filteredMock);
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleService = (service: string) => {
+    setSelectedServices(prev => 
+      prev.includes(service) 
+        ? prev.filter(s => s !== service) 
+        : [...prev, service]
+    );
   };
 
   return (
@@ -52,6 +96,7 @@ const Explorar = () => {
       <Header />
       
       <main className="pt-20">
+        {/* Search & Filter Bar */}
         <div className="glass-dark border-b border-border sticky top-20 z-40">
           <div className="container mx-auto px-4 py-4">
             <div className="flex flex-col lg:flex-row gap-4 items-center">
@@ -59,25 +104,71 @@ const Explorar = () => {
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gold" />
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Digite sua cidade ou bairro..."
                   className="w-full h-12 pl-12 pr-4 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold transition-all"
                 />
               </div>
 
-              <Button
-                variant={premiumOnly ? "gold" : "secondary"}
-                onClick={() => setPremiumOnly(!premiumOnly)}
-                className="gap-2"
-              >
-                <Crown className="w-4 h-4" />
-                Premium Only
-              </Button>
+              <div className="flex gap-2 w-full lg:w-auto">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="gap-2 flex-1 lg:flex-none border-border">
+                      <Filter className="w-4 h-4" />
+                      Serviços {selectedServices.length > 0 && `(${selectedServices.length})`}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 glass-dark border-border p-4" align="end">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium leading-none">Filtrar por Serviços</h4>
+                        {selectedServices.length > 0 && (
+                          <button 
+                            onClick={() => setSelectedServices([])}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Limpar
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                        {LISTA_SERVICOS.map((service) => (
+                          <div key={service} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`filter-${service}`} 
+                              checked={selectedServices.includes(service)}
+                              onCheckedChange={() => toggleService(service)}
+                            />
+                            <label 
+                              htmlFor={`filter-${service}`}
+                              className="text-sm font-medium leading-none cursor-pointer select-none"
+                            >
+                              {service}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                <Button
+                  variant={premiumOnly ? "gold" : "secondary"}
+                  onClick={() => setPremiumOnly(!premiumOnly)}
+                  className="gap-2 flex-1 lg:flex-none"
+                >
+                  <Crown className="w-4 h-4" />
+                  Premium
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
+            {/* Map Column */}
             <div className="lg:w-1/2 xl:w-3/5">
               <div className="sticky top-44 rounded-2xl overflow-hidden border border-border bg-card aspect-[4/3] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                 <GoogleMap
@@ -92,13 +183,30 @@ const Explorar = () => {
               </div>
             </div>
 
+            {/* List Column */}
             <div className="lg:w-1/2 xl:w-2/5">
-              <h2 className="font-display text-2xl font-bold mb-6">
-                {loading ? "Carregando..." : `${profiles.length} perfis encontrados`}
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-display text-2xl font-bold">
+                  {loading ? "Carregando..." : `${profiles.length} perfis encontrados`}
+                </h2>
+              </div>
 
               {loading ? (
                 <div className="flex justify-center py-12"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div>
+              ) : profiles.length === 0 ? (
+                <div className="text-center py-20 glass-dark rounded-2xl border border-dashed border-border">
+                  <p className="text-muted-foreground">Nenhum perfil encontrado com esses filtros.</p>
+                  <Button 
+                    variant="link" 
+                    onClick={() => {
+                      setSelectedServices([]);
+                      setPremiumOnly(false);
+                    }}
+                    className="text-primary mt-2"
+                  >
+                    Limpar todos os filtros
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-4">
                   {profiles.map((profile, index) => (
@@ -137,6 +245,9 @@ const Explorar = () => {
                               {profile.servicos?.slice(0, 3).map((s: string) => (
                                 <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{s}</span>
                               ))}
+                              {profile.servicos?.length > 3 && (
+                                <span className="text-[10px] text-muted-foreground">+{profile.servicos.length - 3}</span>
+                              )}
                             </div>
                             <div className="flex gap-2 mt-3">
                               <Button variant="neon" size="sm" className="flex-1 gap-1.5"><MessageCircle className="w-4 h-4" /> WhatsApp</Button>
