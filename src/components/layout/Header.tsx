@@ -54,7 +54,6 @@ const Header = () => {
 
   const navLinks = [
     { label: "Explorar", href: "/explorar", icon: MapPin },
-    { label: "Premium", href: "/premium", icon: Crown },
     { label: "Sobre", href: "/sobre" },
     { label: "Contato", href: "/contato" },
   ];
