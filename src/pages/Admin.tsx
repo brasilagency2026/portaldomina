@@ -115,12 +115,16 @@ export default function Admin() {
   };
 
   const filteredProfiles = profiles.filter(p => {
-    const matchesSearch = (
-      p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      p.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const matchesCity = !cityFilter || p.localizacao?.toLowerCase().includes(cityFilter.toLowerCase());
+    const name = (p.nome || "").toLowerCase();
+    const email = (p.email || "").toLowerCase();
+    const location = (p.localizacao || "").toLowerCase();
+    const search = searchTerm.toLowerCase();
+    const city = cityFilter.toLowerCase();
+
+    const matchesSearch = name.includes(search) || email.includes(search);
+    const matchesCity = !cityFilter || location.includes(city);
     const matchesStatus = filterStatus === "all" || p.status === filterStatus;
+    
     return matchesSearch && matchesCity && matchesStatus;
   });
 
