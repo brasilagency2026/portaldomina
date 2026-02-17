@@ -3,10 +3,11 @@ import Footer from "@/components/layout/Footer";
 import { motion } from "framer-motion";
 import { Crown, Check, Sparkles, Zap, Eye, MapPin, Image, Video, BarChart3, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const premiumFeatures = [
   { icon: MapPin, title: "Destaque no Mapa", desc: "Apareça em destaque no mapa interativo num raio de 20km da sua localização." },
-  { icon: Zap, title: "Prioridade nas Buscas", desc: "Seu perfil aparece sempre no topo dos resultados de busca." },
+  { icon: Zap, title: "Prioridade nas Buscas", desc: "Seu perfil aparece sempre no topo dos résultats de busca." },
   { icon: Image, title: "Galeria de 20 Fotos", desc: "Publique até 20 fotos no seu perfil profissional." },
   { icon: Video, title: "Até 2 Vídeos", desc: "Adicione até 2 vídeos de 2 minutos cada para mostrar seu trabalho." },
   { icon: BarChart3, title: "Estatísticas", desc: "Acompanhe visualizações, cliques e interações com seu perfil." },
@@ -23,7 +24,7 @@ const comparison = [
   { feature: "Botão Waze", free: true, premium: true },
   { feature: "Carteiras de pagamento", free: true, premium: true },
   { feature: "Galeria de 20 fotos", free: false, premium: true },
-  { feature: "Até 2 vídeos", free: false, premium: true },
+  { feature: "Até 2 vidéos", free: false, premium: true },
   { feature: "Destaque no mapa (20km)", free: false, premium: true },
   { feature: "Prioridade nas buscas", free: false, premium: true },
   { feature: "Endereço completo + Maps", free: false, premium: true },
@@ -57,9 +58,11 @@ const Premium = () => {
                 <span className="text-5xl md:text-6xl font-bold text-gradient-gold">R$ 49,90</span>
                 <span className="text-xl text-muted-foreground">/mês</span>
               </div>
-              <Button variant="gold" size="xl" className="gap-2">
-                <Crown className="w-5 h-5" />
-                Assinar Premium
+              <Button variant="gold" size="xl" className="gap-2" asChild>
+                <Link to="/register">
+                  <Crown className="w-5 h-5" />
+                  Assinar Premium
+                </Link>
               </Button>
             </motion.div>
           </div>
@@ -144,9 +147,11 @@ const Premium = () => {
             </motion.div>
 
             <div className="text-center mt-12">
-              <Button variant="gold" size="xl" className="gap-2">
-                <Crown className="w-5 h-5" />
-                Assinar Premium — R$ 49,90/mês
+              <Button variant="gold" size="xl" className="gap-2" asChild>
+                <Link to="/register">
+                  <Crown className="w-5 h-5" />
+                  Assinar Premium — R$ 49,90/mês
+                </Link>
               </Button>
               <p className="text-sm text-muted-foreground mt-4">
                 Cancele a qualquer momento • Sem fidelidade

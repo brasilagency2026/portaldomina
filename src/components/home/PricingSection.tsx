@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Check, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const plans = [
   {
@@ -29,7 +30,7 @@ const plans = [
     features: [
       "Tudo do plano Gratuito",
       "Galeria de até 20 fotos",
-      "Até 2 vídeos (2 min cada)",
+      "Até 2 vidéos (2 min cada)",
       "Destaque no mapa (raio 20km)",
       "Prioridade nas buscas",
       "Endereço completo com Google Maps",
@@ -126,8 +127,11 @@ const PricingSection = () => {
                 variant={plan.variant}
                 size="lg"
                 className="w-full"
+                asChild
               >
-                {plan.cta}
+                <Link to="/register">
+                  {plan.cta}
+                </Link>
               </Button>
             </motion.div>
           ))}

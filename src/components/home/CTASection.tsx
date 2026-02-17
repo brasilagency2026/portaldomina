@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Crown, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
@@ -32,12 +33,16 @@ const CTASection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="gold" size="xl" className="gap-2 group">
-              Criar Meu Perfil
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <Button variant="gold" size="xl" className="gap-2 group" asChild>
+              <Link to="/register">
+                Criar Meu Perfil
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
-            <Button variant="outline" size="xl">
-              Saber Mais
+            <Button variant="outline" size="xl" asChild>
+              <Link to="/sobre">
+                Saber Mais
+              </Link>
             </Button>
           </div>
 
