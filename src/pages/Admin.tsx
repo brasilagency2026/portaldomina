@@ -17,10 +17,11 @@ import {
   Search, 
   Pause, 
   Play, 
-  Filter,
-  MoreHorizontal,
   MapPin,
-  Clock
+  Clock,
+  MoreHorizontal,
+  EyeOff,
+  Eye
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,6 +43,7 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -75,7 +77,8 @@ export default function Admin() {
   const handleStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("perfis").update({ status }).eq("id", id);
     if (!error) {
-      toast.success(`Perfil atualizado para ${status}`);
+      const statusMsg = status === 'paused' ? 'pausado (invisível)' : status === 'approved' ? 'ativado (visível)' : status;
+      toast.success(`Perfil ${statusMsg} com sucesso!`);
       fetchData();
     }
   };
@@ -97,10 +100,13 @@ export default function Admin() {
   };
 
   const filteredProfiles = profiles.filter(p => {
-    const matchesSearch = (p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         p.email?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = (
+      p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      p.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const matchesCity = !cityFilter || p.localizacao?.toLowerCase().includes(cityFilter.toLowerCase());
     const matchesStatus = filterStatus === "all" || p.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesCity && matchesStatus;
   });
 
   const pendingCount = profiles.filter(p => p.status === 'pending').length;
@@ -123,7 +129,7 @@ export default function Admin() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gradient-gold">Administração Central</h1>
-            <p className="text-muted-foreground">Gerencie inscrições, pagamentos e usuários.</p>
+            <p className="text-muted-foreground">Gerencie inscrições, visibilidade e usuários.</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchData}>Atualizar Dados</Button>
         </div>
@@ -138,26 +144,36 @@ export default function Admin() {
           </TabsList>
 
           <TabsContent value="profiles" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 glass-dark p-4 rounded-xl border border-border">
+            {/* Filtros Avançados */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 glass-dark p-4 rounded-xl border border-border">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar por nome ou email..." 
+                  placeholder="Nome ou email..." 
                   className="pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Filtrar por Cidade..." 
+                  className="pl-10"
+                  value={cityFilter}
+                  onChange={(e) => setCityFilter(e.target.value)}
+                />
+              </div>
+              <div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Filtrar por Status" />
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent className="glass-dark border-border">
                     <SelectItem value="all">Todos os Status</SelectItem>
-                    <SelectItem value="pending">Pendentes (Inscrições)</SelectItem>
-                    <SelectItem value="approved">Aprovados</SelectItem>
-                    <SelectItem value="paused">Pausados</SelectItem>
+                    <SelectItem value="pending">Pendentes</SelectItem>
+                    <SelectItem value="approved">Ativos (Visíveis)</SelectItem>
+                    <SelectItem value="paused">Pausados (Ocultos)</SelectItem>
                     <SelectItem value="rejected">Rejeitados</SelectItem>
                   </SelectContent>
                 </Select>
@@ -166,10 +182,10 @@ export default function Admin() {
                 {selectedIds.length > 0 && (
                   <div className="flex gap-2 w-full">
                     <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={() => handleBulkStatus('approved')}>
-                      <Check className="w-3 h-3" /> Aprovar ({selectedIds.length})
+                      <Check className="w-3 h-3" /> Ativar ({selectedIds.length})
                     </Button>
-                    <Button variant="destructive" size="sm" className="flex-1 gap-1" onClick={() => handleBulkStatus('rejected')}>
-                      <X className="w-3 h-3" /> Rejeitar
+                    <Button variant="destructive" size="sm" className="flex-1 gap-1" onClick={() => handleBulkStatus('paused')}>
+                      <Pause className="w-3 h-3" /> Pausar
                     </Button>
                   </div>
                 )}
@@ -181,27 +197,28 @@ export default function Admin() {
                 <p className="text-center py-10 text-muted-foreground">Nenhum perfil encontrado com esses filtros.</p>
               ) : (
                 filteredProfiles.map((p) => (
-                  <Card key={p.id} className={`glass-dark border-l-4 ${
+                  <Card key={p.id} className={`glass-dark border-l-4 transition-all ${
                     p.status === 'approved' ? 'border-l-green-500' : 
                     p.status === 'pending' ? 'border-l-yellow-500 animate-pulse' : 
-                    p.status === 'paused' ? 'border-l-blue-500' : 'border-l-red-500'
+                    p.status === 'paused' ? 'border-l-blue-500 opacity-75 grayscale-[0.5]' : 'border-l-red-500'
                   }`}>
                     <CardContent className="p-4 flex items-center gap-4">
                       <Checkbox 
                         checked={selectedIds.includes(p.id)}
                         onCheckedChange={() => toggleSelect(p.id)}
                       />
+                      
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-bold truncate">{p.nome || "Sem nome"}</h3>
                           <Badge variant={p.status === 'approved' ? 'default' : 'secondary'} className="text-[10px] uppercase">
-                            {p.status === 'pending' ? 'NOVA INSCRIÇÃO' : p.status}
+                            {p.status === 'pending' ? 'NOVA INSCRIÇÃO' : p.status === 'paused' ? 'PAUSADO' : p.status}
                           </Badge>
                           {p.is_premium && <Badge className="bg-gradient-gold text-[10px]">PREMIUM</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{p.email}</p>
                         <div className="flex items-center gap-3 mt-1">
-                          <p className="text-xs flex items-center gap-1">
+                          <p className="text-xs flex items-center gap-1 font-medium text-primary">
                             <MapPin className="w-3 h-3" /> {p.localizacao || "Não informada"}
                           </p>
                           <p className="text-xs flex items-center gap-1 text-muted-foreground">
@@ -210,7 +227,8 @@ export default function Admin() {
                         </div>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
+                        {/* Botões de Ação Direta */}
                         {p.status === 'pending' ? (
                           <>
                             <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white gap-1" onClick={() => handleStatus(p.id, 'approved')}>
@@ -221,25 +239,45 @@ export default function Admin() {
                             </Button>
                           </>
                         ) : (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="glass-dark border-border">
-                              {p.status === 'approved' ? (
-                                <DropdownMenuItem onClick={() => handleStatus(p.id, 'paused')} className="gap-2">
-                                  <Pause className="w-4 h-4" /> Pausar Perfil
+                          <>
+                            {p.status === 'approved' ? (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="border-blue-500 text-blue-500 hover:bg-blue-500/10 gap-1" 
+                                onClick={() => handleStatus(p.id, 'paused')}
+                                title="Ocultar do site"
+                              >
+                                <Pause className="w-4 h-4" /> Pausar
+                              </Button>
+                            ) : p.status === 'paused' ? (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="border-green-500 text-green-500 hover:bg-green-500/10 gap-1" 
+                                onClick={() => handleStatus(p.id, 'approved')}
+                                title="Mostrar no site"
+                              >
+                                <Play className="w-4 h-4" /> Ativar
+                              </Button>
+                            ) : null}
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="glass-dark border-border">
+                                <DropdownMenuItem asChild>
+                                  <a href={`/profile/${p.id}`} target="_blank" className="flex items-center gap-2">
+                                    <Eye className="w-4 h-4" /> Ver Perfil Público
+                                  </a>
                                 </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem onClick={() => handleStatus(p.id, 'approved')} className="gap-2">
-                                  <Play className="w-4 h-4" /> Ativar Perfil
+                                <DropdownMenuItem onClick={() => handleStatus(p.id, 'rejected')} className="gap-2 text-destructive">
+                                  <X className="w-4 h-4" /> Banir/Rejeitar
                                 </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem onClick={() => handleStatus(p.id, 'rejected')} className="gap-2 text-destructive">
-                                <X className="w-4 h-4" /> Rejeitar/Banir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </>
                         )}
                       </div>
                     </CardContent>
