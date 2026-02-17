@@ -22,13 +22,6 @@ const contactInfo = [
     href: "https://wa.me/5513955517904",
     buttonLabel: "Chamar no WhatsApp",
   },
-  {
-    icon: MapPin,
-    label: "Endereço",
-    value: "Praia da Enseada - Guarujá - SP",
-    href: "https://www.google.com/maps/search/Praia+da+Enseada+Guaruj%C3%A1+SP",
-    buttonLabel: "Ver no Mapa",
-  },
 ];
 
 const socialLinks = [
