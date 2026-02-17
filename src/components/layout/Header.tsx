@@ -12,34 +12,46 @@ const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
+  const checkUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("perfis")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.warn("Erro ao buscar role (RLS pode estar restringindo):", error.message);
+        return;
+      }
+      
+      setIsAdmin(data?.role === 'admin');
+    } catch (err) {
+      console.error("Erro na verificação de admin:", err);
+    }
+  };
+
   useEffect(() => {
-    const checkUser = async () => {
+    const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
       if (currentUser) {
-        const { data } = await supabase
-          .from("perfis")
-          .select("role")
-          .eq("id", currentUser.id)
-          .single();
-        
-        setIsAdmin(data?.role === 'admin');
-      } else {
-        setIsAdmin(false);
+        await checkUserRole(currentUser.id);
       }
     };
 
-    checkUser();
+    initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      if (!currentUser) {
-        setIsAdmin(false);
+      
+      if (currentUser) {
+        await checkUserRole(currentUser.id);
       } else {
-        checkUser();
+        setIsAdmin(false);
       }
     });
 
@@ -91,7 +103,7 @@ const Header = () => {
             {user ? (
               <>
                 {isAdmin && (
-                  <Button variant="ghost" size="sm" className="gap-2 text-primary" asChild>
+                  <Button variant="ghost" size="sm" className="gap-2 text-primary hover:text-primary hover:bg-primary/10" asChild>
                     <Link to="/admin">
                       <ShieldCheck className="w-4 h-4" />
                       Admin
