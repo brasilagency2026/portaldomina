@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Crown, MapPin, MessageCircle, Navigation, ArrowLeft, Shield, Clock, Loader2 } from "lucide-react";
+import { Crown, MapPin, MessageCircle, Navigation, ArrowLeft, Shield, Home, Hotel, Car, Plane, PartyPopper, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { supabase } from "@/lib/supabase";
 import { MOCK_PROFILES } from "@/lib/mockData";
 
+const ICON_MAP: Record<string, any> = {
+  "Local Próprio": Home,
+  "Hotel / Motel": Hotel,
+  "Domicílio": Car,
+  "Viagens": Plane,
+  "Eventos": PartyPopper
+};
+
 const Profile = () => {
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activePhoto, setActivePhoto] = useState(0);
 
   useEffect(() => {
     fetchProfile();
@@ -20,21 +29,14 @@ const Profile = () => {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("perfis")
-        .select("*")
-        .eq("id", id)
-        .single();
-      
+      const { data, error } = await supabase.from("perfis").select("*").eq("id", id).single();
       if (error || !data) {
-        const mock = MOCK_PROFILES.find(p => p.id === id);
-        setProfile(mock);
+        setProfile(MOCK_PROFILES.find(p => p.id === id));
       } else {
         setProfile(data);
       }
     } catch (err) {
-      const mock = MOCK_PROFILES.find(p => p.id === id);
-      setProfile(mock);
+      setProfile(MOCK_PROFILES.find(p => p.id === id));
     } finally {
       setLoading(false);
     }
@@ -42,6 +44,8 @@ const Profile = () => {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin w-12 h-12 text-primary" /></div>;
   if (!profile) return <div className="min-h-screen flex items-center justify-center">Perfil não encontrado</div>;
+
+  const allPhotos = profile.fotos?.length > 0 ? profile.fotos : [profile.foto_url];
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,47 +56,80 @@ const Profile = () => {
         </div>
 
         <div className="container mx-auto px-4 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Gallery Section */}
             <div className="space-y-4">
-              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-border bg-muted">
-                {profile.foto_url ? (
-                  <img 
-                    src={profile.foto_url} 
-                    alt={profile.nome}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
+              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-border bg-muted shadow-premium">
+                <img src={allPhotos[activePhoto]} alt={profile.nome} className="w-full h-full object-cover" />
+                {profile.is_premium && (
+                  <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-sm font-semibold neon-glow">
+                    <Crown className="w-4 h-4" /> Premium
+                  </div>
                 )}
-                {profile.is_premium && <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-sm font-semibold neon-glow"><Crown className="w-4 h-4" /> Premium</div>}
               </div>
+              {allPhotos.length > 1 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {allPhotos.map((url: string, i: number) => (
+                    <button 
+                      key={i} 
+                      onClick={() => setActivePhoto(i)}
+                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"}`}
+                    >
+                      <img src={url} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="space-y-6">
+            {/* Info Section */}
+            <div className="space-y-8">
               <div>
-                <h1 className="font-display text-3xl md:text-4xl font-bold mb-2 neon-text">{profile.nome}</h1>
-                <div className="flex items-center gap-4 text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-primary" /> {profile.localizacao}</span>
+                <h1 className="font-display text-4xl md:text-5xl font-bold mb-2 neon-text">{profile.nome}</h1>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span>{profile.localizacao}</span>
                 </div>
               </div>
 
+              {/* Atendimento */}
+              {profile.atendimento?.length > 0 && (
+                <div className="flex flex-wrap gap-4">
+                  {profile.atendimento.map((local: string) => {
+                    const Icon = ICON_MAP[local] || Home;
+                    return (
+                      <div key={local} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/50 border border-border text-sm">
+                        <Icon className="w-4 h-4 text-primary" />
+                        {local}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="p-6 rounded-2xl bg-gradient-card border border-border">
-                <h3 className="font-display text-lg font-semibold mb-3">Sobre</h3>
-                <p className="text-muted-foreground leading-relaxed">{profile.bio || "Sem biografia disponível."}</p>
+                <h3 className="font-display text-xl font-semibold mb-4">Sobre</h3>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{profile.bio || "Sem biografia disponível."}</p>
               </div>
 
               <div>
-                <h3 className="font-display text-lg font-semibold mb-3">Especialidades</h3>
+                <h3 className="font-display text-xl font-semibold mb-4">Serviços & Especialidades</h3>
                 <div className="flex flex-wrap gap-2">
                   {profile.servicos?.map((s: string) => (
-                    <span key={s} className="px-4 py-2 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20">{s}</span>
+                    <span key={s} className="px-4 py-2 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20">
+                      {s}
+                    </span>
                   ))}
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button variant="neon" size="lg" className="flex-1 gap-2"><MessageCircle className="w-5 h-5" /> WhatsApp</Button>
-                <Button variant="glass" size="lg" className="gap-2"><Navigation className="w-5 h-5" /> Waze</Button>
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button variant="neon" size="xl" className="flex-1 gap-2 h-14 text-lg">
+                  <MessageCircle className="w-6 h-6" /> WhatsApp
+                </Button>
+                <Button variant="outline" size="xl" className="gap-2 h-14 border-primary/30">
+                  <Navigation className="w-6 h-6" /> Waze
+                </Button>
               </div>
             </div>
           </div>
