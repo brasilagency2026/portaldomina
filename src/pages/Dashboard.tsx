@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
-import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Plus, Trash2, Home, Hotel, Car, Plane, PartyPopper, Loader2 } from "lucide-react";
+import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Plus, Trash2, Home, Hotel, Car, Plane, PartyPopper, Loader2, Upload } from "lucide-react";
 
 const LISTA_SERVICOS = [
   "Bondage", "Spanking", "CBT", "Foot Worship", "Roleplay", "Sissy Training", 
@@ -33,7 +33,7 @@ const LOCAIS_ATENDIMENTO = [
 export default function Dashboard() {
   const [perfil, setPerfil] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [newPhotoUrl, setNewPhotoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchPerfil();
@@ -44,14 +44,12 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Tentar buscar o perfil
       let { data, error } = await supabase
         .from("perfis")
         .select("*")
         .eq("id", user.id)
         .maybeSingle();
 
-      // Se não existir, criar um perfil básico automaticamente
       if (!data) {
         const { data: newProfile, error: createError } = await supabase
           .from("perfis")
@@ -107,19 +105,49 @@ export default function Dashboard() {
     setPerfil({ ...perfil, atendimento: updated });
   };
 
-  const addPhoto = () => {
-    if (!perfil) return;
-    const currentFotos = perfil.fotos || [];
-    const limit = perfil.is_premium ? 20 : 5;
-    
-    if (currentFotos.length >= limit) {
-      toast.error(`Limite de ${limit} fotos atingido.`);
-      return;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      if (!event.target.files || event.target.files.length === 0) return;
+      if (!perfil) return;
+
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${perfil.id}/${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const limit = perfil.is_premium ? 20 : 5;
+      const currentFotos = perfil.fotos || [];
+      
+      if (currentFotos.length >= limit) {
+        toast.error(`Limite de ${limit} fotos atingido.`);
+        return;
+      }
+
+      // Upload vers Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Récupérer l'URL publique
+      const { data: { publicUrl } } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath);
+
+      // Mettre à jour l'état local
+      const updatedFotos = [...currentFotos, publicUrl];
+      setPerfil({ ...perfil, fotos: updatedFotos });
+      
+      toast.success("Foto enviada com sucesso!");
+    } catch (error: any) {
+      toast.error("Erro no upload: " + error.message);
+    } finally {
+      setUploading(false);
+      // Reset input
+      event.target.value = '';
     }
-    if (!newPhotoUrl) return;
-    
-    setPerfil({ ...perfil, fotos: [...currentFotos, newPhotoUrl] });
-    setNewPhotoUrl("");
   };
 
   const removePhoto = (index: number) => {
@@ -134,18 +162,6 @@ export default function Dashboard() {
       <p className="text-muted-foreground">Carregando seu painel...</p>
     </div>
   );
-
-  if (!perfil) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto pt-32 px-4 text-center">
-          <h1 className="text-2xl font-bold mb-2">Erro ao carregar perfil</h1>
-          <Button onClick={() => window.location.reload()}>Tentar Novamente</Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -265,15 +281,30 @@ export default function Dashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="Cole a URL da imagem aqui..." 
-                    value={newPhotoUrl}
-                    onChange={e => setNewPhotoUrl(e.target.value)}
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl p-12 hover:border-primary/50 transition-colors relative">
+                  <input 
+                    type="file" 
+                    accept="image/png, image/jpeg" 
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
                   />
-                  <Button onClick={addPhoto} className="bg-primary gap-2">
-                    <Plus className="w-4 h-4" /> Adicionar
-                  </Button>
+                  {uploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Enviando arquivo...</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold">Clique ou arraste para enviar</p>
+                        <p className="text-sm text-muted-foreground">PNG ou JPG (Máx. 5MB)</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
