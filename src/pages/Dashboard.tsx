@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,10 +36,36 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
     fetchPerfil();
   }, []);
+
+  // Inicializa o Autocomplete do Google
+  useEffect(() => {
+    if (!loading && locationInputRef.current && window.google) {
+      autocompleteRef.current = new google.maps.places.Autocomplete(locationInputRef.current, {
+        componentRestrictions: { country: "br" },
+        fields: ["formatted_address", "geometry"],
+        types: ["(cities)"] // Foca em cidades para manter a privacidade, ou remova para permitir bairros
+      });
+
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current?.getPlace();
+        if (place?.geometry?.location) {
+          setPerfil((prev: any) => ({
+            ...prev,
+            localizacao: place.formatted_address,
+            lat: place.geometry?.location?.lat(),
+            lng: place.geometry?.location?.lng()
+          }));
+          toast.success("Localização atualizada com sucesso!");
+        }
+      });
+    }
+  }, [loading]);
 
   const fetchPerfil = async () => {
     try {
@@ -215,11 +241,17 @@ export default function Dashboard() {
                           <Input value={perfil.nome || ""} onChange={e => setPerfil({...perfil, nome: e.target.value})} />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Localização Principal</label>
+                          <label className="text-sm font-medium">Cidade / Localização</label>
                           <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input className="pl-10" value={perfil.localizacao || ""} onChange={e => setPerfil({...perfil, localizacao: e.target.value})} />
+                            <Input 
+                              ref={locationInputRef}
+                              className="pl-10" 
+                              placeholder="Digite sua cidade..."
+                              defaultValue={perfil.localizacao || ""} 
+                            />
                           </div>
+                          <p className="text-[10px] text-muted-foreground">Selecione uma opção da lista para garantir a precisão no mapa.</p>
                         </div>
                       </div>
                       <div className="space-y-2">
