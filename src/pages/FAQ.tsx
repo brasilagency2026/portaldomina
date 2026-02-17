@@ -10,7 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { HelpCircle, ShieldCheck, CreditCard, MessageCircle } from "lucide-react";
+import { HelpCircle, ShieldCheck, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const faqs = [
@@ -24,7 +24,7 @@ const faqs = [
       },
       {
         q: "O site é gratuito para usuários?",
-        a: "Sim, a navegação e a busca por perfis são totalmente gratuitas. Você só paga pelos serviços diretamente às profissionais."
+        a: "Sim, a navegação e a busca por perfis são totalmente gratuitas."
       }
     ]
   },
@@ -39,16 +39,6 @@ const faqs = [
       {
         q: "Meus dados estão seguros?",
         a: "Sim, utilizamos criptografia de ponta a ponta e seguimos as diretrizes da LGPD para garantir sua total privacidade."
-      }
-    ]
-  },
-  {
-    category: "Pagamentos",
-    icon: CreditCard,
-    questions: [
-      {
-        q: "Quais formas de pagamento são aceitas?",
-        a: "Aceitamos PIX, cartões de crédito e criptomoedas. O pagamento é combinado diretamente com a profissional escolhida."
       }
     ]
   }
