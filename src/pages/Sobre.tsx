@@ -7,7 +7,7 @@ const services = [
   {
     icon: ShoppingBag,
     title: "Loja Online",
-    description: "Boutique completa com mais de 1500 acessórios BDSM e entrega em todo Brasil.",
+    description: "Boutique completa with mais de 1500 acessórios BDSM e entrega em todo Brasil.",
     link: "https://bdsmbrazil.com.br/loja",
     linkLabel: "Visitar Loja",
   },
@@ -27,10 +27,10 @@ const services = [
   },
   {
     icon: MessageSquare,
-    title: "Anúncios Anônimos",
-    description: "Serviço de classificados anônimos via aplicativo Session para total privacidade.",
+    title: "Anúncios",
+    description: "Serviço de classificados completo para profissionais e entusiastas do universo BDSM.",
     link: "https://anuncios-bdsm.bdsmbrazil.com.br",
-    linkLabel: "Saiba Mais",
+    linkLabel: "Ver Anúncios",
   },
 ];
 
