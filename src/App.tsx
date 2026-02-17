@@ -9,6 +9,7 @@ import Profile from "./pages/Profile";
 import Premium from "./pages/Premium";
 import Sobre from "./pages/Sobre";
 import Contato from "./pages/Contato";
+import FAQ from "./pages/FAQ";
 import Perfis from "./pages/Perfis";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/premium" element={<Premium />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/contato" element={<Contato />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/perfis" element={<Perfis />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
