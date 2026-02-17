@@ -18,7 +18,8 @@ import {
   Pause, 
   Play, 
   Filter,
-  MoreHorizontal
+  MoreHorizontal,
+  MapPin
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -51,11 +52,16 @@ export default function Admin() {
 
   const fetchData = async () => {
     setLoading(true);
-    const { data: pData } = await supabase.from("perfis").select("*").order('created_at', { ascending: false });
-    const { data: payData } = await supabase.from("pagamentos").select("*, perfis(nome)").order('created_at', { ascending: false });
-    setProfiles(pData || []);
-    setPayments(payData || []);
-    setLoading(false);
+    try {
+      const { data: pData } = await supabase.from("perfis").select("*").order('created_at', { ascending: false });
+      const { data: payData } = await supabase.from("pagamentos").select("*, perfis(nome)").order('created_at', { ascending: false });
+      setProfiles(pData || []);
+      setPayments(payData || []);
+    } catch (err) {
+      console.error("Erro ao buscar dados:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStatus = async (id: string, status: string) => {
@@ -89,8 +95,16 @@ export default function Admin() {
     return matchesSearch && matchesLocation;
   });
 
-  if (loading && !profiles.length) return <div className="text-center pt-32">Carregando painel administrativo...</div>;
-  if (!isAdmin) return <div className="min-h-screen flex items-center justify-center text-center flex-col gap-4"><ShieldAlert className="w-16 h-16 text-destructive" /><h1 className="text-2xl font-bold">Acesso Negado</h1><p>Você não tem permissão para acessar esta área.</p></div>;
+  if (loading && !profiles.length) return <div className="min-h-screen flex items-center justify-center">Carregando painel administrativo...</div>;
+  
+  if (!isAdmin) return (
+    <div className="min-h-screen flex items-center justify-center text-center flex-col gap-4">
+      <ShieldAlert className="w-16 h-16 text-destructive" />
+      <h1 className="text-2xl font-bold">Acesso Negado</h1>
+      <p>Você não tem permissão para acessar esta área.</p>
+      <Button asChild variant="outline"><a href="/">Voltar para Home</a></Button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,9 +112,7 @@ export default function Admin() {
       <div className="container mx-auto pt-32 px-4 pb-20">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <h1 className="text-3xl font-bold text-gradient-gold">Administração Central</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={fetchData}>Atualizar Dados</Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={fetchData}>Atualizar Dados</Button>
         </div>
         
         <Tabs defaultValue="profiles" className="space-y-6">
@@ -110,7 +122,6 @@ export default function Admin() {
           </TabsList>
 
           <TabsContent value="profiles" className="space-y-6">
-            {/* Filtros */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 glass-dark p-4 rounded-xl border border-border">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -144,10 +155,9 @@ export default function Admin() {
               </div>
             </div>
 
-            {/* Lista de Perfis */}
             <div className="space-y-4">
               {filteredProfiles.length === 0 ? (
-                <p className="text-center py-10 text-muted-foreground">Nenhum perfil encontrado com esses filtros.</p>
+                <p className="text-center py-10 text-muted-foreground">Nenhum perfil encontrado.</p>
               ) : (
                 filteredProfiles.map((p) => (
                   <Card key={p.id} className={`glass-dark border-l-4 ${
@@ -161,7 +171,7 @@ export default function Admin() {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-bold truncate">{p.nome}</h3>
+                          <h3 className="font-bold truncate">{p.nome || "Sem nome"}</h3>
                           <Badge variant={p.status === 'approved' ? 'default' : 'secondary'} className="text-[10px] uppercase">
                             {p.status}
                           </Badge>
