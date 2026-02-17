@@ -13,12 +13,13 @@ import { MapPin, Crown, Lock, User as UserIcon, Image as ImageIcon, Plus, Trash2
 
 const LISTA_SERVICOS = [
   "Bondage", "Spanking", "CBT", "Foot Worship", "Roleplay", "Sissy Training", 
-  "Pegging", "Medical Play", "Impact Play", "Wax Play", "Sensory Deprivation", 
-  "Golden Shower", "Facesitting", "Trampling", "Humilhação Verbal", 
-  "Dominação Financeira", "Adoração à Deusa", "Fetiche em Couro", 
+  "Pegging", "Medical Play", "Wax Play", "Sensory Deprivation", 
+  "Facesitting", "Trampling", "Humilhação Verbal", 
+  "Dominação Financeira", "Fetiche em Couro", 
   "Fetiche em Látex", "Crossdressing", "Eletroestimulação", "Agulhamento", 
-  "Puppy Play", "Kitten Play", "Ageplay", "Breath Play", "Fire Play", 
-  "Knife Play", "Blood Play", "Caning"
+  "Puppy Play", "Ageplay", "Breath Play", "Fire Play", 
+  "Knife Play", "Blood Play", "Caning",
+  "Chuva dourada", "Chuva marrom", "Ballbusting"
 ];
 
 const LOCAIS_ATENDIMENTO = [
