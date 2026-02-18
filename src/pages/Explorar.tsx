@@ -183,11 +183,12 @@ const Explorar = () => {
               <div className="sticky top-44 rounded-2xl overflow-hidden border border-border bg-card aspect-[4/3] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                 <GoogleMap
                   onMarkerClick={(id) => {
-                    const profile = profiles.find(p => p.id === id);
+                    const profile = filteredProfiles.find(p => p.id === id);
                     navigate(`/profile/${profile?.slug || id}`);
                   }}
                   markers={filteredProfiles.map((p) => ({
                     id: p.id,
+                    slug: p.slug || p.id,
                     name: p.nome,
                     lat: p.lat || -23.5505,
                     lng: p.lng || -46.6333,

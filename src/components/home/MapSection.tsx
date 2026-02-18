@@ -17,7 +17,7 @@ const MapSection = () => {
       const data = await safeFetch(
         () => supabase
           .from("perfis")
-          .select("id, nome, lat, lng, is_premium")
+          .select("id, slug, nome, lat, lng, is_premium")
           .eq("status", "approved"),
         "MapSection"
       );
@@ -66,9 +66,13 @@ const MapSection = () => {
             </div>
           ) : (
             <GoogleMap
-              onMarkerClick={(id) => navigate(`/profile/${id}`)}
+              onMarkerClick={(id) => {
+                const profile = profiles.find(p => p.id === id);
+                navigate(`/profile/${profile?.slug || id}`);
+              }}
               markers={profiles.map((p) => ({
                 id: p.id,
+                slug: p.slug || p.id,
                 name: p.nome,
                 lat: p.lat || -23.5505,
                 lng: p.lng || -46.6333,
