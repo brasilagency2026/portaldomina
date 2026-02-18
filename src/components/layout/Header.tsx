@@ -1,57 +1,76 @@
-"use client";
-
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Crown, MapPin, User, LogIn, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { 
+  Menu, 
+  X, 
+  User, 
+  LogIn, 
+  LogOut, 
+  LayoutDashboard,
+  Search,
+  Heart,
+  MessageSquare
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { useSession } from "@/components/auth/SessionProvider";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { useSession } from "@/components/auth/SessionProvider";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { user, isAdmin, loading } = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Fermer le menu mobile lors du changement de page
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("Até logo!");
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast.success("Desconectado com sucesso");
+      navigate("/");
+      // Optionnel: forcer un rechargement si l'état reste collant
+      // window.location.href = "/";
+    } catch (error: any) {
+      toast.error("Erro ao sair: " + error.message);
+    }
   };
 
-  const navLinks = [
-    { label: "Explorar", href: "/explorar", icon: MapPin },
-    { label: "Sobre", href: "/sobre" },
-    { label: "Contato", href: "/contato" },
-  ];
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-primary/10">
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "glass-dark py-3 shadow-lg" : "bg-transparent py-5"
+      }`}
+    >
       <div className="container mx-auto px-4">
-        <nav className="flex items-center justify-between h-20">
+        <nav className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-lg bg-gradient-gold flex items-center justify-center">
-              <Crown className="w-6 h-6 text-primary-foreground" />
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center shadow-neon group-hover:scale-110 transition-transform">
+              <span className="text-black font-bold text-xl">L</span>
             </div>
-            <span className="font-display text-2xl font-bold text-gradient-gold">
-              BDSMBRAZIL
+            <span className="font-display text-2xl font-bold tracking-tighter">
+              LUX<span className="text-gradient-gold">AURA</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-300 font-medium"
-              >
-                {link.icon && <link.icon className="w-4 h-4" />}
-                {link.label}
-              </Link>
-            ))}
+            <Link to="/explorar" className="text-sm font-medium hover:text-primary transition-colors">Explorar</Link>
+            <Link to="/mapa" className="text-sm font-medium hover:text-primary transition-colors">Mapa</Link>
+            <Link to="/premium" className="text-sm font-medium hover:text-primary transition-colors">Premium</Link>
           </div>
 
           {/* Desktop Actions */}
@@ -59,26 +78,23 @@ const Header = () => {
             {!loading && (
               <>
                 {user ? (
-                  <>
-                    {isAdmin && (
-                      <Button variant="ghost" size="sm" className="gap-2 text-primary hover:text-primary hover:bg-primary/10" asChild>
-                        <Link to="/admin">
-                          <ShieldCheck className="w-4 h-4" />
-                          Admin
-                        </Link>
-                      </Button>
-                    )}
+                  <div className="flex items-center gap-3">
                     <Button variant="ghost" size="sm" className="gap-2" asChild>
-                      <Link to="/dashboard">
+                      <Link to={isAdmin ? "/admin" : "/dashboard"}>
                         <LayoutDashboard className="w-4 h-4" />
                         Painel
                       </Link>
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-2 border-primary/30" onClick={handleLogout}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleLogout}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
+                    >
                       <LogOut className="w-4 h-4" />
                       Sair
                     </Button>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" className="gap-2" asChild>
@@ -99,67 +115,53 @@ const Header = () => {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <button
+          {/* Mobile Menu Button */}
+          <button 
             className="md:hidden p-2 text-foreground"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X /> : <Menu />}
           </button>
         </nav>
       </div>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass-dark border-t border-border"
-          >
-            <div className="container mx-auto px-4 py-6 flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors py-2 font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.icon && <link.icon className="w-5 h-5" />}
-                  {link.label}
-                </Link>
-              ))}
-              <div className="flex flex-col gap-3 pt-4 border-t border-border">
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 glass-dark border-b border-white/10 p-4 animate-in slide-in-from-top duration-300">
+          <div className="flex flex-col gap-4">
+            <Link to="/explorar" className="p-2 font-medium">Explorar</Link>
+            <Link to="/mapa" className="p-2 font-medium">Mapa</Link>
+            <Link to="/premium" className="p-2 font-medium">Premium</Link>
+            <hr className="border-white/10" />
+            {!loading && (
+              <>
                 {user ? (
                   <>
-                    {isAdmin && (
-                      <Button variant="ghost" className="justify-start gap-2 text-primary" asChild onClick={() => setIsMenuOpen(false)}>
-                        <Link to="/admin"><ShieldCheck className="w-4 h-4" /> Admin</Link>
-                      </Button>
-                    )}
-                    <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" /> Painel</Link>
-                    </Button>
-                    <Button variant="outline" className="justify-start gap-2 border-primary/30" onClick={handleLogout}>
+                    <Link to={isAdmin ? "/admin" : "/dashboard"} className="p-2 font-medium flex items-center gap-2">
+                      <LayoutDashboard className="w-4 h-4" /> Painel
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="p-2 font-medium text-destructive flex items-center gap-2 text-left"
+                    >
                       <LogOut className="w-4 h-4" /> Sair
-                    </Button>
+                    </button>
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" className="justify-start gap-2" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/login"><LogIn className="w-4 h-4" /> Entrar</Link>
-                    </Button>
-                    <Button variant="gold" className="justify-start gap-2" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/register"><User className="w-4 h-4" /> Cadastrar</Link>
-                    </Button>
+                    <Link to="/login" className="p-2 font-medium flex items-center gap-2">
+                      <LogIn className="w-4 h-4" /> Entrar
+                    </Link>
+                    <Link to="/register" className="p-2 font-medium flex items-center gap-2 text-primary">
+                      <User className="w-4 h-4" /> Cadastrar
+                    </Link>
                   </>
                 )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 };

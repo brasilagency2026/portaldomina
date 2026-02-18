@@ -1,129 +1,134 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { LogIn, Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import Header from "@/components/layout/Header";
-import { useSession } from "@/components/auth/SessionProvider";
-import { Loader2, LogIn } from "lucide-react";
 
-export default function Login() {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { user, loading } = useSession();
-  const location = useLocation();
-
-  // Redireciona se já estiver logado
-  useEffect(() => {
-    if (!loading && user) {
-      const from = (location.state as any)?.from?.pathname || "/dashboard";
-      navigate(from, { replace: true });
-    }
-  }, [user, loading, navigate, location]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
-    
-    setIsSubmitting(true);
+    if (loading) return;
+
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ 
-        email: email.trim(), 
-        password 
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (error) {
-        if (error.message === "Invalid login credentials") {
-          toast.error("E-mail ou senha incorretos.");
-        } else {
-          toast.error("Erro ao entrar: " + error.message);
-        }
-        setIsSubmitting(false);
-      } else {
-        toast.success("Bem-vinda de volta!");
-        // O useEffect acima cuidará do redirecionamento assim que a sessão for detectada
+      if (error) throw error;
+
+      if (data.user) {
+        toast.success("Bem-vindo de volta!");
+        // Redirection vers le dashboard après un court délai pour laisser le SessionProvider se mettre à jour
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 500);
       }
-    } catch (err: any) {
-      toast.error("Ocorreu um erro inesperado ao tentar entrar.");
-      setIsSubmitting(false);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error(error.message || "Erro ao fazer login");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto flex items-center justify-center pt-40 px-4">
-        <Card className="w-full max-w-md glass-dark border-primary/20 shadow-premium">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center text-gradient-gold flex items-center justify-center gap-2">
-              <LogIn className="w-6 h-6 text-primary" />
-              Entrar no Portal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">E-mail</label>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
+          <ArrowLeft className="w-4 h-4" /> Voltar para o início
+        </Link>
+
+        <div className="glass-dark border border-white/10 rounded-3xl p-8 shadow-premium">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-gold flex items-center justify-center shadow-neon mx-auto mb-4">
+              <LogIn className="w-8 h-8 text-black" />
+            </div>
+            <h1 className="font-display text-3xl font-bold mb-2">Entrar</h1>
+            <p className="text-muted-foreground">Acesse sua conta LuxAura</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium ml-1">E-mail</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder="seu@email.com"
+                  className="pl-10 bg-background/50 border-white/10 focus:border-primary/50"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  disabled={isSubmitting}
-                  className="bg-background/50"
+                  disabled={loading}
                 />
               </div>
-              <div className="space-y-2">
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center ml-1">
                 <label className="text-sm font-medium">Senha</label>
+                <Link to="/forgot-password" size="sm" className="text-xs text-primary hover:underline">
+                  Esqueceu a senha?
+                </Link>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="password"
-                  placeholder="Sua senha"
+                  placeholder="••••••••"
+                  className="pl-10 bg-background/50 border-white/10 focus:border-primary/50"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  disabled={isSubmitting}
-                  className="bg-background/50"
+                  disabled={loading}
                 />
               </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-gold h-12 text-lg font-bold" 
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Entrando...
-                  </>
-                ) : "Entrar"}
-              </Button>
-              <div className="text-center space-y-2 mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Não tem uma conta? <a href="/register" className="text-primary hover:underline font-semibold">Cadastre-se</a>
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Esqueceu sua senha? <button type="button" className="hover:text-primary transition-colors">Recuperar</button>
-                </p>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+
+            <Button type="submit" variant="gold" className="w-full h-12 text-lg font-semibold mt-4" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  Entrando...
+                </>
+              ) : (
+                "Entrar"
+              )}
+            </Button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-muted-foreground text-sm">
+              Não tem uma conta?{" "}
+              <Link to="/register" className="text-primary font-semibold hover:underline">
+                Cadastre-se agora
+              </Link>
+            </p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
-}
+};
+
+export default Login;
