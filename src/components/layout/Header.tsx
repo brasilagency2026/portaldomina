@@ -57,6 +57,10 @@ const Header = () => {
                 src="/symbolbdsmtransparent.png" 
                 alt="BDSMBRAZIL Logo" 
                 className="w-full h-full object-contain drop-shadow-neon"
+                onError={(e) => {
+                  // Fallback caso a imagem não carregue
+                  e.currentTarget.src = "/favicon.png";
+                }}
               />
             </div>
             <span className="font-display text-2xl font-bold tracking-tighter">
