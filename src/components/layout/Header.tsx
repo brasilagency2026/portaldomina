@@ -7,9 +7,7 @@ import {
   LogIn, 
   LogOut, 
   LayoutDashboard,
-  Search,
-  Heart,
-  MessageSquare
+  Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/components/auth/SessionProvider";
@@ -29,7 +27,6 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fermer le menu mobile lors du changement de page
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location]);
@@ -41,8 +38,6 @@ const Header = () => {
       
       toast.success("Desconectado com sucesso");
       navigate("/");
-      // Optionnel: forcer un rechargement si l'état reste collant
-      // window.location.href = "/";
     } catch (error: any) {
       toast.error("Erro ao sair: " + error.message);
     }
@@ -56,20 +51,21 @@ const Header = () => {
     >
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo Corrigido para BDSMBRAZIL */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center shadow-neon group-hover:scale-110 transition-transform">
-              <span className="text-black font-bold text-xl">L</span>
+              <Crown className="w-6 h-6 text-black" />
             </div>
             <span className="font-display text-2xl font-bold tracking-tighter">
-              LUX<span className="text-gradient-gold">AURA</span>
+              BDSM<span className="text-gradient-gold">BRAZIL</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link to="/explorar" className="text-sm font-medium hover:text-primary transition-colors">Explorar</Link>
-            <Link to="/mapa" className="text-sm font-medium hover:text-primary transition-colors">Mapa</Link>
+            {/* Link do Mapa corrigido para /explorar que contém o mapa */}
+            <Link to="/explorar" className="text-sm font-medium hover:text-primary transition-colors">Mapa</Link>
             <Link to="/premium" className="text-sm font-medium hover:text-primary transition-colors">Premium</Link>
           </div>
 
@@ -130,7 +126,7 @@ const Header = () => {
         <div className="md:hidden absolute top-full left-0 right-0 glass-dark border-b border-white/10 p-4 animate-in slide-in-from-top duration-300">
           <div className="flex flex-col gap-4">
             <Link to="/explorar" className="p-2 font-medium">Explorar</Link>
-            <Link to="/mapa" className="p-2 font-medium">Mapa</Link>
+            <Link to="/explorar" className="p-2 font-medium">Mapa</Link>
             <Link to="/premium" className="p-2 font-medium">Premium</Link>
             <hr className="border-white/10" />
             {!loading && (

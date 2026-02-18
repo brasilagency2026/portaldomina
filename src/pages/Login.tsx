@@ -28,7 +28,6 @@ const Login = () => {
 
       if (data.user) {
         toast.success("Bem-vindo de volta!");
-        // Redirection vers le dashboard après un court délai pour laisser le SessionProvider se mettre à jour
         setTimeout(() => {
           navigate("/dashboard");
         }, 500);
@@ -43,7 +42,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
@@ -64,7 +62,7 @@ const Login = () => {
               <LogIn className="w-8 h-8 text-black" />
             </div>
             <h1 className="font-display text-3xl font-bold mb-2">Entrar</h1>
-            <p className="text-muted-foreground">Acesse sua conta LuxAura</p>
+            <p className="text-muted-foreground">Acesse sua conta BDSMBRAZIL</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
