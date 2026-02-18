@@ -12,28 +12,50 @@ const MapSection = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchProfiles = async () => {
+      console.log("[MapSection] Iniciando busca de perfis para o mapa...");
+      
+      const timeoutId = setTimeout(() => {
+        if (mounted && loading) {
+          console.warn("[MapSection] Timeout atingido. Usando dados mock.");
+          setProfiles(MOCK_PROFILES);
+          setLoading(false);
+        }
+      }, 5000);
+
       try {
         const { data, error } = await supabase
           .from("perfis")
           .select("*")
           .eq("status", "approved");
         
-        if (error || !data || data.length === 0) {
-          console.log("[MapSection] Using MOCK data");
-          setProfiles(MOCK_PROFILES);
-        } else {
-          setProfiles(data || []);
+        clearTimeout(timeoutId);
+        
+        if (mounted) {
+          if (error || !data || data.length === 0) {
+            console.log("[MapSection] Usando dados MOCK");
+            setProfiles(MOCK_PROFILES);
+          } else {
+            console.log("[MapSection] Perfis reais carregados para o mapa:", data.length);
+            setProfiles(data || []);
+          }
         }
       } catch (err) {
-        console.error("[MapSection] Error:", err);
-        console.log("[MapSection] Using MOCK data due to error");
-        setProfiles(MOCK_PROFILES);
+        console.error("[MapSection] Erro:", err);
+        if (mounted) {
+          setProfiles(MOCK_PROFILES);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchProfiles();
+    return () => { mounted = false; };
   }, []);
 
   return (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Crown, MapPin, MessageCircle, Loader2, AlertCircle } from "lucide-react";
+import { Crown, MapPin, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -72,9 +72,21 @@ const FeaturedProfiles = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    
     const fetchFeatured = async () => {
+      console.log("[FeaturedProfiles] Iniciando busca de perfis...");
+      
+      // Timeout de segurança de 5 segundos
+      const timeoutId = setTimeout(() => {
+        if (mounted && loading) {
+          console.warn("[FeaturedProfiles] Timeout atingido. Usando dados mock.");
+          setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
+          setLoading(false);
+        }
+      }, 5000);
+
       try {
-        // Busca perfis reais aprovados e premium
         const { data, error } = await supabase
           .from("perfis")
           .select("*")
@@ -82,22 +94,36 @@ const FeaturedProfiles = () => {
           .eq("status", "approved")
           .limit(4);
         
-        if (error) throw error;
+        clearTimeout(timeoutId);
+
+        if (error) {
+          console.error("[FeaturedProfiles] Erro Supabase:", error);
+          throw error;
+        }
         
-        if (!data || data.length === 0) {
-          // Se não houver dados reais, usa os mocks para não deixar a seção vazia
-          setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
-        } else {
-          setProfiles(data);
+        if (mounted) {
+          if (!data || data.length === 0) {
+            console.log("[FeaturedProfiles] Nenhum perfil real encontrado. Usando mocks.");
+            setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
+          } else {
+            console.log("[FeaturedProfiles] Perfis reais carregados:", data.length);
+            setProfiles(data);
+          }
         }
       } catch (err) {
-        console.error("[FeaturedProfiles] Error:", err);
-        setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
+        console.error("[FeaturedProfiles] Erro crítico:", err);
+        if (mounted) {
+          setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchFeatured();
+    return () => { mounted = false; };
   }, []);
 
   return (
@@ -113,7 +139,9 @@ const FeaturedProfiles = () => {
         </motion.div>
 
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="animate-spin w-12 h-12 text-primary" /></div>
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin w-12 h-12 text-primary" />
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {profiles.map((profile, index) => (
