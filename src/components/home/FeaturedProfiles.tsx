@@ -7,10 +7,6 @@ import { supabase } from "@/lib/supabase";
 import { MOCK_PROFILES } from "@/lib/mockData";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
-  // Lógica robusta para encontrar uma imagem:
-  // 1. Tenta foto_url
-  // 2. Se não tiver, tenta a primeira foto do array 'fotos'
-  // 3. Se não tiver nada, fica null e mostra o placeholder
   const displayImage = profile.foto_url || (Array.isArray(profile.fotos) && profile.fotos.length > 0 ? profile.fotos[0] : null);
 
   return (
@@ -83,17 +79,26 @@ const FeaturedProfiles = () => {
     
     const fetchFeatured = async () => {
       try {
-        // Busca perfis aprovados (não pausados), priorizando Premium
-        const { data, error } = await supabase
+        // 1. Tenta buscar perfis aprovados
+        let { data, error } = await supabase
           .from("perfis")
           .select("*")
           .eq("status", "approved")
           .order("is_premium", { ascending: false })
-          .order("created_at", { ascending: false })
           .limit(8);
 
+        // 2. Se não houver aprovados, tenta buscar QUALQUER perfil real (para não mostrar mocks se houver dados)
+        if (!data || data.length === 0) {
+          const { data: allData } = await supabase
+            .from("perfis")
+            .select("*")
+            .limit(8);
+          data = allData;
+        }
+
         if (mounted) {
-          if (error || !data || data.length === 0) {
+          if (!data || data.length === 0) {
+            // 3. Só usa mocks se o banco estiver realmente vazio
             setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
           } else {
             setProfiles(data);
