@@ -72,19 +72,24 @@ const FeaturedProfiles = () => {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("perfis")
           .select("*")
           .eq("is_premium", true)
           .eq("status", "approved")
           .limit(4);
         
+        console.log("[FeaturedProfiles] DB Data:", data);
+        
         if (!data || data.length === 0) {
+          console.log("[FeaturedProfiles] Using MOCK data");
           setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
         } else {
           setProfiles(data);
         }
       } catch (err) {
+        console.error("[FeaturedProfiles] Error:", err);
+        console.log("[FeaturedProfiles] Using MOCK data due to error");
         setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
       } finally {
         setLoading(false);

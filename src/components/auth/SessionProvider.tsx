@@ -25,29 +25,57 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Busca a sessão inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminRole(session.user.id);
+    let mounted = true;
+    
+    // Timeout de sécurité pour débloquer l'UI si Supabase ne répond pas
+    const safetyTimeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("[SessionProvider] Timeout: Forcing loading to false");
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    }, 2000);
 
-    // Escuta mudanças na autenticação
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            checkAdminRole(session.user.id);
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("[SessionProvider] Error initializing session:", error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initSession();
+
+    // Écoute des changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await checkAdminRole(session.user.id);
-      } else {
-        setIsAdmin(false);
+      if (mounted) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await checkAdminRole(session.user.id);
+        } else {
+          setIsAdmin(false);
+        }
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const checkAdminRole = async (userId: string) => {
@@ -62,7 +90,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         setIsAdmin(data.role === 'admin');
       }
     } catch (err) {
-      console.error("Erro ao verificar role de admin:", err);
+      console.error("[SessionProvider] Error checking admin role:", err);
     }
   };
 

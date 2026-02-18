@@ -20,11 +20,14 @@ const MapSection = () => {
           .eq("status", "approved");
         
         if (error || !data || data.length === 0) {
+          console.log("[MapSection] Using MOCK data");
           setProfiles(MOCK_PROFILES);
         } else {
           setProfiles(data || []);
         }
       } catch (err) {
+        console.error("[MapSection] Error:", err);
+        console.log("[MapSection] Using MOCK data due to error");
         setProfiles(MOCK_PROFILES);
       } finally {
         setLoading(false);
