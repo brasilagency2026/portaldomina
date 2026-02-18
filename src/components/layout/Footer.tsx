@@ -15,11 +15,11 @@ const Footer = () => {
       { label: "FAQ", href: "/faq" },
       { label: "Contato", href: "/contato" },
     ],
-    legal: [
-      { label: "Termos de Uso", href: "/termos" },
-      { label: "Política de Privacidade", href: "/privacidade" },
-      { label: "LGPD", href: "/lgpd" },
-      { label: "Cookies", href: "/cookies" },
+    ecossistema: [
+      { label: "Loja Online", href: "https://bdsmbrazil.com.br/loja", external: true },
+      { label: "Portal dos Motéis BDSM", href: "https://moteis-bdsm.bdsmbrazil.com.br", external: true },
+      { label: "Domina Virtual AI", href: "https://dominavirtual.bdsmbrazil.com.br", external: true },
+      { label: "Anúncios BDSM", href: "https://anuncios-bdsm.bdsmbrazil.com.br", external: true },
     ],
   };
 
@@ -32,9 +32,9 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 flex items-center justify-center">
-                <img 
-                  src="/symbolbdsmtransparent.png" 
-                  alt="BDSMBRAZIL Logo" 
+                <img
+                  src="/symbolbdsmtransparent.png"
+                  alt="BDSMBRAZIL Logo"
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -48,13 +48,17 @@ const Footer = () => {
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://www.instagram.com/bd.smbrazil/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-gold hover:bg-secondary/80 transition-colors"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com/eros.domina.5"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-gold hover:bg-secondary/80 transition-colors"
               >
                 <Twitter className="w-5 h-5" />
@@ -62,7 +66,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Links */}
+          {/* Plataforma */}
           <div>
             <h4 className="font-semibold mb-4">Plataforma</h4>
             <ul className="space-y-3">
@@ -79,6 +83,7 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Suporte */}
           <div>
             <h4 className="font-semibold mb-4">Suporte</h4>
             <ul className="space-y-3">
@@ -95,17 +100,20 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Écosystème */}
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
+            <h4 className="font-semibold mb-4">Ecossistema</h4>
             <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
+              {footerLinks.ecossistema.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    to={link.href}
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
