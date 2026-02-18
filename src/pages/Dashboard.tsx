@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
 import { useSession } from "@/components/auth/SessionProvider";
-import { User as UserIcon, Image as ImageIcon, Lock, Loader2 } from "lucide-react";
+import { User as UserIcon, Image as ImageIcon, Lock, Loader2, BarChart3 } from "lucide-react";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ProfileTab from "@/components/dashboard/ProfileTab";
 import PhotosTab from "@/components/dashboard/PhotosTab";
 import SecurityTab from "@/components/dashboard/SecurityTab";
+import StatsTab from "@/components/dashboard/StatsTab";
 
 export default function Dashboard() {
   const { user, loading: sessionLoading } = useSession();
@@ -88,6 +89,13 @@ export default function Dashboard() {
     try {
       setUploading(true);
       if (!event.target.files || event.target.files.length === 0) return;
+      
+      const limit = perfil.is_premium ? 20 : 5;
+      if ((perfil.fotos || []).length >= limit) {
+        toast.error(`Limite de ${limit} fotos atingido.`);
+        return;
+      }
+
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${perfil.id}/${Math.random()}.${fileExt}`;
@@ -97,8 +105,17 @@ export default function Dashboard() {
 
       const { data: { publicUrl } } = supabase.storage.from('profiles').getPublicUrl(fileName);
       const updatedFotos = [...(perfil.fotos || []), publicUrl];
+      
+      // Persistência imediata no banco
+      const { error: dbError } = await supabase
+        .from("perfis")
+        .update({ fotos: updatedFotos })
+        .eq("id", perfil.id);
+      
+      if (dbError) throw dbError;
+
       setPerfil({ ...perfil, fotos: updatedFotos });
-      toast.success("Foto enviada!");
+      toast.success("Foto enviada e salva!");
     } catch (error: any) {
       toast.error("Erro no upload: " + error.message);
     } finally {
@@ -106,9 +123,23 @@ export default function Dashboard() {
     }
   };
 
-  const removePhoto = (index: number) => {
-    const updated = (perfil.fotos || []).filter((_: any, i: number) => i !== index);
-    setPerfil({ ...perfil, fotos: updated });
+  const removePhoto = async (index: number) => {
+    try {
+      const updatedFotos = (perfil.fotos || []).filter((_: any, i: number) => i !== index);
+      
+      // Persistência imediata no banco
+      const { error: dbError } = await supabase
+        .from("perfis")
+        .update({ fotos: updatedFotos })
+        .eq("id", perfil.id);
+      
+      if (dbError) throw dbError;
+
+      setPerfil({ ...perfil, fotos: updatedFotos });
+      toast.success("Foto removida!");
+    } catch (error: any) {
+      toast.error("Erro ao remover foto.");
+    }
   };
 
   if (sessionLoading || loading) return (
@@ -125,10 +156,11 @@ export default function Dashboard() {
         <DashboardHeader role={perfil?.role} isPremium={perfil?.is_premium} />
 
         <Tabs defaultValue="perfil" className="space-y-8">
-          <TabsList className="bg-card border border-border">
-            <TabsTrigger value="perfil" className="gap-2"><UserIcon className="w-4 h-4" /> Meu Perfil</TabsTrigger>
-            <TabsTrigger value="fotos" className="gap-2"><ImageIcon className="w-4 h-4" /> Galeria</TabsTrigger>
-            <TabsTrigger value="seguranca" className="gap-2"><Lock className="w-4 h-4" /> Segurança</TabsTrigger>
+          <TabsList className="bg-card border border-border overflow-x-auto flex-nowrap justify-start md:justify-center">
+            <TabsTrigger value="perfil" className="gap-2 shrink-0"><UserIcon className="w-4 h-4" /> Perfil</TabsTrigger>
+            <TabsTrigger value="fotos" className="gap-2 shrink-0"><ImageIcon className="w-4 h-4" /> Galeria</TabsTrigger>
+            <TabsTrigger value="stats" className="gap-2 shrink-0"><BarChart3 className="w-4 h-4" /> Estatísticas</TabsTrigger>
+            <TabsTrigger value="seguranca" className="gap-2 shrink-0"><Lock className="w-4 h-4" /> Segurança</TabsTrigger>
           </TabsList>
 
           <TabsContent value="perfil">
@@ -147,6 +179,10 @@ export default function Dashboard() {
               handleFileUpload={handleFileUpload} 
               removePhoto={removePhoto} 
             />
+          </TabsContent>
+
+          <TabsContent value="stats">
+            <StatsTab isPremium={perfil?.is_premium} />
           </TabsContent>
 
           <TabsContent value="seguranca">
