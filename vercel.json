@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/profile/:id",
-      "destination": "/api/profile/:id"
+      "source": "/profile/:slug",
+      "destination": "/api/profile/:slug"
     },
     {
       "source": "/(.*)",
