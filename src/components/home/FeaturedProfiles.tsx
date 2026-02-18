@@ -83,7 +83,7 @@ const FeaturedProfiles = () => {
     
     const fetchFeatured = async () => {
       try {
-        // Busca perfis aprovados, priorizando Premium
+        // Busca perfis aprovados (não pausados), priorizando Premium
         const { data, error } = await supabase
           .from("perfis")
           .select("*")
@@ -94,7 +94,6 @@ const FeaturedProfiles = () => {
 
         if (mounted) {
           if (error || !data || data.length === 0) {
-            // Fallback para mocks se o banco estiver vazio
             setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
           } else {
             setProfiles(data);

@@ -46,7 +46,6 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -66,7 +65,7 @@ export default function Admin() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setUserId(user.id);
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("perfis")
         .select("role")
         .eq("id", user.id)
@@ -97,13 +96,9 @@ export default function Admin() {
 
       setProfiles(pData || []);
       setPayments(payData || []);
-      
-      if (pData) {
-        toast.success(`${pData.length} perfis carregados.`);
-      }
     } catch (err: any) {
       console.error("Erro ao buscar dados:", err);
-      toast.error("Erro de permissão: Verifique as políticas RLS no Supabase.");
+      toast.error("Erro ao carregar dados.");
     } finally {
       setRefreshing(false);
     }
@@ -112,20 +107,10 @@ export default function Admin() {
   const handleStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("perfis").update({ status }).eq("id", id);
     if (!error) {
-      toast.success(`Status atualizado!`);
+      toast.success(`Status atualizado para ${status}!`);
       fetchData();
     } else {
-      toast.error("Erro: Você não tem permissão para editar este perfil (RLS).");
-    }
-  };
-
-  const handleBulkStatus = async (status: string) => {
-    if (selectedIds.length === 0) return;
-    const { error } = await supabase.from("perfis").update({ status }).in("id", selectedIds);
-    if (!error) {
-      toast.success(`${selectedIds.length} perfis atualizados.`);
-      setSelectedIds([]);
-      fetchData();
+      toast.error("Erro ao atualizar status.");
     }
   };
 
@@ -138,78 +123,42 @@ export default function Admin() {
   const filteredProfiles = profiles.filter(p => {
     const name = (p.nome || "").toLowerCase();
     const email = (p.email || "").toLowerCase();
-    const location = (p.localizacao || "").toLowerCase();
     const search = searchTerm.toLowerCase();
-    const city = cityFilter.toLowerCase();
 
     const matchesSearch = name.includes(search) || email.includes(search);
-    const matchesCity = !cityFilter || location.includes(city);
     const matchesStatus = filterStatus === "all" || p.status === filterStatus;
     
-    return matchesSearch && matchesCity && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
 
-  const pendingCount = profiles.filter(p => p.status === 'pending').length;
-
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-      <Loader2 className="w-12 h-12 animate-spin text-primary" />
-      <p className="text-muted-foreground">Verificando acesso...</p>
-    </div>
-  );
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
   
-  if (isAdmin === false) return (
-    <div className="min-h-screen flex items-center justify-center text-center flex-col gap-6 px-4">
-      <ShieldAlert className="w-16 h-16 text-destructive" />
-      <h1 className="text-3xl font-bold">Acesso Negado</h1>
-      <Button asChild variant="outline"><a href="/">Voltar</a></Button>
-    </div>
-  );
+  if (!isAdmin) return <div className="min-h-screen flex items-center justify-center">Acesso Negado</div>;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto pt-32 px-4 pb-20">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gradient-gold">Administração Central</h1>
-            <p className="text-muted-foreground">Gerencie inscrições e usuários.</p>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={fetchData} 
-            disabled={refreshing}
-            className="gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Atualizar Dados
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gradient-gold">Administração Central</h1>
+          <Button variant="outline" onClick={fetchData} disabled={refreshing}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Atualizar
           </Button>
         </div>
 
-        {profiles.length === 1 && profiles[0].id === userId && (
-          <div className="mb-6 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center gap-3 text-yellow-500">
-            <AlertTriangle className="w-5 h-5 shrink-0" />
-            <p className="text-sm">
-              <strong>Atenção:</strong> Você só está vendo o seu próprio perfil. Isso indica que as <strong>Políticas RLS</strong> no seu Supabase estão bloqueando o acesso aos outros dados. Execute o script SQL de permissão no painel do Supabase.
-            </p>
-          </div>
-        )}
-        
         <Tabs defaultValue="profiles" className="space-y-6">
           <TabsList className="bg-card border border-border">
-            <TabsTrigger value="profiles" className="gap-2">
-              <Users className="w-4 h-4" /> 
-              Perfis {pendingCount > 0 && <Badge className="ml-1 bg-primary">{pendingCount}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2"><CreditCard className="w-4 h-4" /> Financeiro</TabsTrigger>
+            <TabsTrigger value="profiles" className="gap-2"><Users className="w-4 h-4" /> Perfis</TabsTrigger>
+            <TabsTrigger value="payments" className="gap-2"><CreditCard className="w-4 h-4" /> Pagamentos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profiles" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 glass-dark p-4 rounded-xl border border-border">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 glass-dark p-4 rounded-xl border border-border">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar..." 
+                  placeholder="Buscar por nome ou email..." 
                   className="pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -217,39 +166,36 @@ export default function Admin() {
               </div>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder="Filtrar por Status" />
                 </SelectTrigger>
                 <SelectContent className="glass-dark border-border">
-                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="all">Todos os Status</SelectItem>
                   <SelectItem value="pending">Pendentes</SelectItem>
                   <SelectItem value="approved">Ativos</SelectItem>
+                  <SelectItem value="paused">Pausados</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex gap-2">
-                {selectedIds.length > 0 && (
-                  <Button variant="outline" size="sm" className="w-full" onClick={() => handleBulkStatus('approved')}>
-                    Aprovar Selecionados ({selectedIds.length})
-                  </Button>
-                )}
-              </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid gap-4">
               {filteredProfiles.map((p) => (
-                <Card key={p.id} className={`glass-dark border-l-4 ${
-                  p.status === 'approved' ? 'border-l-green-500' : 'border-l-yellow-500'
-                }`}>
+                <Card key={p.id} className="glass-dark border-border">
                   <CardContent className="p-4 flex items-center gap-4">
-                    <Checkbox 
-                      checked={selectedIds.includes(p.id)}
-                      onCheckedChange={() => toggleSelect(p.id)}
-                    />
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0">
+                      <img 
+                        src={p.foto_url || (p.fotos && p.fotos[0]) || "/placeholder.svg"} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold truncate">{p.nome || "Sem nome"}</h3>
-                        {p.id === userId && <Badge variant="outline" className="text-[10px]">VOCÊ</Badge>}
-                      </div>
+                      <h3 className="font-bold truncate">{p.nome || "Sem nome"}</h3>
                       <p className="text-xs text-muted-foreground truncate">{p.email}</p>
+                      <div className="flex gap-2 mt-1">
+                        <Badge variant={p.status === 'approved' ? 'default' : p.status === 'paused' ? 'secondary' : 'outline'}>
+                          {p.status}
+                        </Badge>
+                        {p.is_premium && <Badge className="bg-gold text-black">Premium</Badge>}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {p.status === 'pending' && (
@@ -267,8 +213,17 @@ export default function Admin() {
                               <Eye className="w-4 h-4" /> Ver Perfil
                             </a>
                           </DropdownMenuItem>
+                          {p.status === 'approved' ? (
+                            <DropdownMenuItem onClick={() => handleStatus(p.id, 'paused')} className="text-yellow-500">
+                              <Pause className="w-4 h-4 mr-2" /> Pausar Publicação
+                            </DropdownMenuItem>
+                          ) : p.status === 'paused' ? (
+                            <DropdownMenuItem onClick={() => handleStatus(p.id, 'approved')} className="text-green-500">
+                              <Play className="w-4 h-4 mr-2" /> Retomar Publicação
+                            </DropdownMenuItem>
+                          ) : null}
                           <DropdownMenuItem onClick={() => handleStatus(p.id, 'rejected')} className="text-destructive">
-                            Rejeitar
+                            <X className="w-4 h-4 mr-2" /> Rejeitar/Remover
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
