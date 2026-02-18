@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const QUERY_TIMEOUT_MS = 5000;
+const QUERY_TIMEOUT_MS = 10000;
 
 export function withTimeout<T>(promise: Promise<T>, ms = QUERY_TIMEOUT_MS): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
@@ -17,7 +17,7 @@ export async function safeFetch<T>(
     console.log(`[supabaseQuery] Starting: ${label}`);
     const start = Date.now();
     const result = await withTimeout(queryFn());
-    console.log(`[supabaseQuery] Done: ${label} in ${Date.now() - start}ms`, result);
+    console.log(`[supabaseQuery] Done: ${label} in ${Date.now() - start}ms`);
     if (result.error) {
       console.error(`[supabaseQuery] Error in ${label}:`, result.error);
       return null;
