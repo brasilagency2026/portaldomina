@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Crown, MapPin, MessageCircle, Loader2 } from "lucide-react";
+import { Crown, MapPin, MessageCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -25,7 +25,9 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background flex items-center justify-center">
+                <Crown className="w-12 h-12 text-primary/20" />
+              </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
             {profile.is_premium && (
@@ -42,11 +44,11 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
             </h3>
             <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
-              {profile.localizacao}
+              {profile.localizacao || "Brasil"}
             </p>
 
             <div className="flex flex-wrap gap-2 mb-5">
-              {profile.servicos?.slice(0, 3).map((s: string) => (
+              {profile.servicos?.slice(0, 2).map((s: string) => (
                 <span key={s} className="px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
                   {s}
                 </span>
@@ -72,6 +74,7 @@ const FeaturedProfiles = () => {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
+        // Busca perfis reais aprovados e premium
         const { data, error } = await supabase
           .from("perfis")
           .select("*")
@@ -79,17 +82,16 @@ const FeaturedProfiles = () => {
           .eq("status", "approved")
           .limit(4);
         
-        console.log("[FeaturedProfiles] DB Data:", data);
+        if (error) throw error;
         
         if (!data || data.length === 0) {
-          console.log("[FeaturedProfiles] Using MOCK data");
+          // Se não houver dados reais, usa os mocks para não deixar a seção vazia
           setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
         } else {
           setProfiles(data);
         }
       } catch (err) {
         console.error("[FeaturedProfiles] Error:", err);
-        console.log("[FeaturedProfiles] Using MOCK data due to error");
         setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
       } finally {
         setLoading(false);
@@ -111,7 +113,7 @@ const FeaturedProfiles = () => {
         </motion.div>
 
         {loading ? (
-          <div className="flex justify-center"><Loader2 className="animate-spin w-12 h-12 text-primary" /></div>
+          <div className="flex justify-center py-20"><Loader2 className="animate-spin w-12 h-12 text-primary" /></div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {profiles.map((profile, index) => (
