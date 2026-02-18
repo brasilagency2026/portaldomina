@@ -7,8 +7,11 @@ import { supabase } from "@/lib/supabase";
 import { MOCK_PROFILES } from "@/lib/mockData";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
-  // Tenta usar foto_url, se não existir, pega a primeira da galeria 'fotos'
-  const displayImage = profile.foto_url || (profile.fotos && profile.fotos.length > 0 ? profile.fotos[0] : null);
+  // Lógica robusta para encontrar uma imagem:
+  // 1. Tenta foto_url
+  // 2. Se não tiver, tenta a primeira foto do array 'fotos'
+  // 3. Se não tiver nada, fica null e mostra o placeholder
+  const displayImage = profile.foto_url || (Array.isArray(profile.fotos) && profile.fotos.length > 0 ? profile.fotos[0] : null);
 
   return (
     <Link to={`/profile/${profile.id}`}>
@@ -26,6 +29,7 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
                 src={displayImage} 
                 alt={profile.nome}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background flex items-center justify-center">
@@ -42,17 +46,17 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
           </div>
 
           <div className="p-5">
-            <h3 className="font-display text-xl font-semibold mb-1 group-hover:text-primary transition-colors">
+            <h3 className="font-display text-xl font-semibold mb-1 group-hover:text-primary transition-colors truncate">
               {profile.nome}
             </h3>
-            <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
+            <p className="text-sm text-muted-foreground mb-4 flex items-center gap-1 truncate">
               <MapPin className="w-3.5 h-3.5" />
               {profile.localizacao || "Brasil"}
             </p>
 
-            <div className="flex flex-wrap gap-2 mb-5">
-              {profile.servicos?.slice(0, 2).map((s: string) => (
-                <span key={s} className="px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+            <div className="flex flex-wrap gap-2 mb-5 h-14 overflow-hidden">
+              {profile.servicos?.slice(0, 3).map((s: string) => (
+                <span key={s} className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-secondary text-secondary-foreground whitespace-nowrap">
                   {s}
                 </span>
               ))}
@@ -78,34 +82,19 @@ const FeaturedProfiles = () => {
     let mounted = true;
     
     const fetchFeatured = async () => {
-      const timeoutId = setTimeout(() => {
-        if (mounted && loading) {
-          setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
-          setLoading(false);
-        }
-      }, 6000);
-
       try {
-        let { data, error } = await supabase
+        // Busca perfis aprovados, priorizando Premium
+        const { data, error } = await supabase
           .from("perfis")
           .select("*")
           .eq("status", "approved")
-          .eq("is_premium", true)
-          .limit(4);
-        
-        if (!data || data.length === 0) {
-          const { data: anyApproved } = await supabase
-            .from("perfis")
-            .select("*")
-            .eq("status", "approved")
-            .limit(4);
-          data = anyApproved;
-        }
-
-        clearTimeout(timeoutId);
+          .order("is_premium", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(8);
 
         if (mounted) {
-          if (!data || data.length === 0) {
+          if (error || !data || data.length === 0) {
+            // Fallback para mocks se o banco estiver vazio
             setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
           } else {
             setProfiles(data);
@@ -127,7 +116,7 @@ const FeaturedProfiles = () => {
       <div className="container mx-auto px-4 relative z-10">
         <motion.div className="text-center mb-16">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-dark border border-primary/30 text-sm text-primary mb-6">
-            <Crown className="w-4 h-4" /> Destaques Premium
+            <Crown className="w-4 h-4" /> Destaques da Comunidade
           </span>
           <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
             Profissionais em <span className="text-gradient-gold">Destaque</span>
