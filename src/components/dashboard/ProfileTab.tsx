@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { MapPin, Home, Hotel, Car, Plane, PartyPopper } from "lucide-react";
+import { MapPin, Home, Hotel, Car, Plane, PartyPopper, Phone } from "lucide-react";
 
 const LISTA_SERVICOS = [
   "Bondage", "Spanking", "CBT", "Foot Worship", "Roleplay", "Sissy Training", 
@@ -61,7 +61,10 @@ const ProfileTab = ({ perfil, setPerfil, handleUpdate, locationInputRef }: Profi
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Nome de Cena</label>
-                  <Input value={perfil.nome || ""} onChange={e => setPerfil({...perfil, nome: e.target.value})} />
+                  <Input
+                    value={perfil.nome || ""}
+                    onChange={e => setPerfil({...perfil, nome: e.target.value})}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Cidade / Localização</label>
@@ -76,9 +79,45 @@ const ProfileTab = ({ perfil, setPerfil, handleUpdate, locationInputRef }: Profi
                   </div>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-green-500" />
+                  WhatsApp / Telefone
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                    +55
+                  </span>
+                  <Input
+                    className="pl-12"
+                    placeholder="(11) 99999-9999"
+                    value={perfil.telefone || ""}
+                    onChange={e => {
+                      // Formata automaticamente o número
+                      let val = e.target.value.replace(/\D/g, "");
+                      if (val.length <= 11) {
+                        val = val
+                          .replace(/^(\d{2})(\d)/, "($1) $2")
+                          .replace(/(\d{5})(\d)/, "$1-$2");
+                      }
+                      setPerfil({ ...perfil, telefone: val });
+                    }}
+                    maxLength={15}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Este número será usado para o botão de contato WhatsApp no seu perfil.
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Biografia</label>
-                <Textarea rows={4} value={perfil.bio || ""} onChange={e => setPerfil({...perfil, bio: e.target.value})} />
+                <Textarea
+                  rows={4}
+                  value={perfil.bio || ""}
+                  onChange={e => setPerfil({...perfil, bio: e.target.value})}
+                />
               </div>
             </CardContent>
           </Card>
@@ -133,9 +172,13 @@ const ProfileTab = ({ perfil, setPerfil, handleUpdate, locationInputRef }: Profi
             <CardContent className="space-y-4">
               <div className={`p-4 rounded-lg border ${perfil.status === 'approved' ? 'border-green-500/30 bg-green-500/10' : 'border-yellow-500/30 bg-yellow-500/10'}`}>
                 <p className="text-sm opacity-70">Status:</p>
-                <p className="text-lg font-bold uppercase">{perfil.status === 'approved' ? '✅ Ativo' : '⏳ Em Análise'}</p>
+                <p className="text-lg font-bold uppercase">
+                  {perfil.status === 'approved' ? '✅ Ativo' : '⏳ Em Análise'}
+                </p>
               </div>
-              <Button type="submit" className="w-full bg-gradient-gold">Salvar Todas Alterações</Button>
+              <Button type="submit" className="w-full bg-gradient-gold">
+                Salvar Todas Alterações
+              </Button>
             </CardContent>
           </Card>
         </div>

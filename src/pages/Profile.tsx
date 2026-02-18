@@ -43,6 +43,17 @@ const Profile = () => {
     }
   };
 
+  const getWhatsAppUrl = () => {
+    if (!profile?.telefone) return null;
+    const digits = profile.telefone.replace(/\D/g, "");
+    return `https://wa.me/55${digits}`;
+  };
+
+  const getWazeUrl = () => {
+    if (!profile?.lat || !profile?.lng) return null;
+    return `https://waze.com/ul?ll=${profile.lat},${profile.lng}&navigate=yes`;
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader2 className="animate-spin w-12 h-12 text-primary" />
@@ -61,13 +72,19 @@ const Profile = () => {
   );
 
   const allPhotos = profile.fotos?.length > 0 ? profile.fotos : (profile.foto_url ? [profile.foto_url] : []);
+  const whatsappUrl = getWhatsAppUrl();
+  const wazeUrl = getWazeUrl();
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-20">
         <div className="container mx-auto px-4 py-4">
-          <Link to="/explorar"><Button variant="ghost" className="gap-2"><ArrowLeft className="w-4 h-4" /> Voltar</Button></Link>
+          <Link to="/explorar">
+            <Button variant="ghost" className="gap-2">
+              <ArrowLeft className="w-4 h-4" /> Voltar
+            </Button>
+          </Link>
         </div>
 
         <div className="container mx-auto px-4 pb-16">
@@ -127,7 +144,9 @@ const Profile = () => {
 
               <div className="p-6 rounded-2xl bg-gradient-card border border-border">
                 <h3 className="font-display text-xl font-semibold mb-4">Sobre</h3>
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{profile.bio || "Sem biografia disponível."}</p>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                  {profile.bio || "Sem biografia disponível."}
+                </p>
               </div>
 
               <div>
@@ -142,13 +161,36 @@ const Profile = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button variant="neon" size="xl" className="flex-1 gap-2 h-14 text-lg">
-                  <MessageCircle className="w-6 h-6" /> WhatsApp
-                </Button>
-                <Button variant="outline" size="xl" className="gap-2 h-14 border-primary/30">
-                  <Navigation className="w-6 h-6" /> Waze
-                </Button>
+                {whatsappUrl ? (
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <Button variant="neon" size="xl" className="w-full gap-2 h-14 text-lg">
+                      <MessageCircle className="w-6 h-6" /> WhatsApp
+                    </Button>
+                  </a>
+                ) : (
+                  <Button variant="neon" size="xl" className="flex-1 gap-2 h-14 text-lg" disabled>
+                    <MessageCircle className="w-6 h-6" /> WhatsApp
+                  </Button>
+                )}
+
+                {wazeUrl ? (
+                  <a href={wazeUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="xl" className="gap-2 h-14 border-primary/30">
+                      <Navigation className="w-6 h-6" /> Waze
+                    </Button>
+                  </a>
+                ) : (
+                  <Button variant="outline" size="xl" className="gap-2 h-14 border-primary/30" disabled>
+                    <Navigation className="w-6 h-6" /> Waze
+                  </Button>
+                )}
               </div>
+
+              {!whatsappUrl && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Esta profissional ainda não adicionou um número de contato.
+                </p>
+              )}
             </div>
           </div>
         </div>
