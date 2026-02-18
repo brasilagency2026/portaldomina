@@ -1,62 +1,18 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Crown, MapPin, User, LogIn, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useSession } from "@/components/auth/SessionProvider";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isAdmin, loading } = useSession();
   const navigate = useNavigate();
-
-  const checkUserRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("perfis")
-        .select("role")
-        .eq("id", userId)
-        .maybeSingle();
-      
-      if (error) {
-        console.warn("Erro ao buscar role (RLS pode estar restringindo):", error.message);
-        return;
-      }
-      
-      setIsAdmin(data?.role === 'admin');
-    } catch (err) {
-      console.error("Erro na verificação de admin:", err);
-    }
-  };
-
-  useEffect(() => {
-    const initAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        await checkUserRole(currentUser.id);
-      }
-    };
-
-    initAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (currentUser) {
-        await checkUserRole(currentUser.id);
-      } else {
-        setIsAdmin(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -71,7 +27,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-dark">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-primary/10">
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -100,41 +56,45 @@ const Header = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
-            {user ? (
+            {!loading && (
               <>
-                {isAdmin && (
-                  <Button variant="ghost" size="sm" className="gap-2 text-primary hover:text-primary hover:bg-primary/10" asChild>
-                    <Link to="/admin">
-                      <ShieldCheck className="w-4 h-4" />
-                      Admin
-                    </Link>
-                  </Button>
+                {user ? (
+                  <>
+                    {isAdmin && (
+                      <Button variant="ghost" size="sm" className="gap-2 text-primary hover:text-primary hover:bg-primary/10" asChild>
+                        <Link to="/admin">
+                          <ShieldCheck className="w-4 h-4" />
+                          Admin
+                        </Link>
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" className="gap-2" asChild>
+                      <Link to="/dashboard">
+                        <LayoutDashboard className="w-4 h-4" />
+                        Painel
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2 border-primary/30" onClick={handleLogout}>
+                      <LogOut className="w-4 h-4" />
+                      Sair
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" className="gap-2" asChild>
+                      <Link to="/login">
+                        <LogIn className="w-4 h-4" />
+                        Entrar
+                      </Link>
+                    </Button>
+                    <Button variant="gold" size="sm" className="gap-2" asChild>
+                      <Link to="/register">
+                        <User className="w-4 h-4" />
+                        Cadastrar
+                      </Link>
+                    </Button>
+                  </>
                 )}
-                <Button variant="ghost" size="sm" className="gap-2" asChild>
-                  <Link to="/dashboard">
-                    <LayoutDashboard className="w-4 h-4" />
-                    Painel
-                  </Link>
-                </Button>
-                <Button variant="outline" size="sm" className="gap-2 border-primary/30" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4" />
-                  Sair
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" className="gap-2" asChild>
-                  <Link to="/login">
-                    <LogIn className="w-4 h-4" />
-                    Entrar
-                  </Link>
-                </Button>
-                <Button variant="gold" size="sm" className="gap-2" asChild>
-                  <Link to="/register">
-                    <User className="w-4 h-4" />
-                    Cadastrar
-                  </Link>
-                </Button>
               </>
             )}
           </div>
