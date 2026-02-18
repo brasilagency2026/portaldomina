@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Crown, MapPin, MessageCircle, Loader2 } from "lucide-react";
+import { Crown, MapPin, MessageCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { supabase, withTimeout } from "@/lib/supabaseQuery";
+import { supabase, safeFetch } from "@/lib/supabaseQuery";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
   const displayImage = profile.foto_url || (Array.isArray(profile.fotos) && profile.fotos.length > 0 ? profile.fotos[0] : null);
@@ -39,7 +39,6 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
               </div>
             )}
           </div>
-
           <div className="p-5">
             <h3 className="font-display text-xl font-semibold mb-1 group-hover:text-primary transition-colors truncate">
               {profile.nome}
@@ -48,7 +47,6 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
               <MapPin className="w-3.5 h-3.5" />
               {profile.localizacao || "Brasil"}
             </p>
-
             <div className="flex flex-wrap gap-2 mb-5 h-14 overflow-hidden">
               {profile.servicos?.slice(0, 3).map((s: string) => (
                 <span key={s} className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-secondary text-secondary-foreground whitespace-nowrap">
@@ -56,7 +54,6 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
                 </span>
               ))}
             </div>
-
             <div className="flex gap-2">
               <Button variant="neon" size="sm" className="flex-1 gap-1.5">
                 <MessageCircle className="w-4 h-4" /> WhatsApp
@@ -72,26 +69,29 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
 const FeaturedProfiles = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
 
     const fetchFeatured = async () => {
-      try {
-        const { data } = await withTimeout(
-          supabase
-            .from("perfis")
-            .select("id, nome, localizacao, servicos, fotos, foto_url, is_premium")
-            .eq("status", "approved")
-            .order("is_premium", { ascending: false })
-            .limit(8)
-        );
-        if (mounted) setProfiles(data || []);
-      } catch (err) {
-        console.error("Erro ao buscar destaques:", err);
-        if (mounted) setProfiles([]);
-      } finally {
-        if (mounted) setLoading(false);
+      const data = await safeFetch(
+        () => supabase
+          .from("perfis")
+          .select("id, nome, localizacao, servicos, fotos, foto_url, is_premium")
+          .eq("status", "approved")
+          .order("is_premium", { ascending: false })
+          .limit(8),
+        "FeaturedProfiles"
+      );
+
+      if (mounted) {
+        if (data === null) {
+          setError("Não foi possível carregar os perfis.");
+        } else {
+          setProfiles(data as any[]);
+        }
+        setLoading(false);
       }
     };
 
@@ -99,7 +99,7 @@ const FeaturedProfiles = () => {
     return () => { mounted = false; };
   }, []);
 
-  if (!loading && profiles.length === 0) return null;
+  if (!loading && profiles.length === 0 && !error) return null;
 
   return (
     <section className="py-24 relative">
@@ -116,6 +116,11 @@ const FeaturedProfiles = () => {
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="animate-spin w-12 h-12 text-primary" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
+            <AlertCircle className="w-8 h-8 text-destructive" />
+            <p>{error}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

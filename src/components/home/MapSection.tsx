@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Loader2 } from "lucide-react";
 import GoogleMap from "@/components/explore/GoogleMap";
-import { supabase, withTimeout } from "@/lib/supabaseQuery";
+import { supabase, safeFetch } from "@/lib/supabaseQuery";
 import { useNavigate } from "react-router-dom";
 
 const MapSection = () => {
@@ -14,19 +14,17 @@ const MapSection = () => {
     let mounted = true;
 
     const fetchProfiles = async () => {
-      try {
-        const { data } = await withTimeout(
-          supabase
-            .from("perfis")
-            .select("id, nome, lat, lng, is_premium")
-            .eq("status", "approved")
-        );
-        if (mounted) setProfiles(data || []);
-      } catch (err) {
-        console.error("Erro ao carregar mapa:", err);
-        if (mounted) setProfiles([]);
-      } finally {
-        if (mounted) setLoading(false);
+      const data = await safeFetch(
+        () => supabase
+          .from("perfis")
+          .select("id, nome, lat, lng, is_premium")
+          .eq("status", "approved"),
+        "MapSection"
+      );
+
+      if (mounted) {
+        setProfiles((data as any[]) || []);
+        setLoading(false);
       }
     };
 
@@ -39,7 +37,6 @@ const MapSection = () => {
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
