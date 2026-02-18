@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Crown, MessageCircle, Loader2, Filter } from "lucide-react";
+import { MapPin, Crown, MessageCircle, Loader2, Filter, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -24,6 +24,42 @@ const LISTA_SERVICOS = [
   "Knife Play", "Blood Play", "Caning",
   "Chuva dourada", "Chuva marrom", "Ballbusting"
 ];
+
+// Composant image avec fallback robuste
+const ProfileImage = ({ profile }: { profile: any }) => {
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    // Cherche la première image valide
+    if (Array.isArray(profile.fotos) && profile.fotos.length > 0) {
+      const valid = profile.fotos.find((f: string) => f && f.startsWith("http"));
+      if (valid) { setImgSrc(valid); return; }
+    }
+    if (profile.foto_url && profile.foto_url.startsWith("http")) {
+      setImgSrc(profile.foto_url);
+      return;
+    }
+    setImgSrc(null);
+  }, [profile]);
+
+  if (!imgSrc || error) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background flex items-center justify-center">
+        <Crown className="w-8 h-8 text-primary/30" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imgSrc}
+      alt={profile.nome}
+      className="w-full h-full object-cover"
+      onError={() => setError(true)}
+    />
+  );
+};
 
 const Explorar = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -78,6 +114,7 @@ const Explorar = () => {
       <Header />
 
       <main className="pt-20">
+        {/* Barre de recherche sticky */}
         <div className="glass-dark border-b border-border sticky top-20 z-40">
           <div className="container mx-auto px-4 py-4">
             <div className="flex flex-col lg:flex-row gap-4 items-center">
@@ -143,6 +180,7 @@ const Explorar = () => {
 
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
+            {/* Carte */}
             <div className="lg:w-1/2 xl:w-3/5">
               <div className="sticky top-44 rounded-2xl overflow-hidden border border-border bg-card aspect-[4/3] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                 <GoogleMap
@@ -158,6 +196,7 @@ const Explorar = () => {
               </div>
             </div>
 
+            {/* Liste des profils */}
             <div className="lg:w-1/2 xl:w-2/5">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-display text-2xl font-bold">
@@ -182,57 +221,68 @@ const Explorar = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredProfiles.map((profile, index) => {
-                    const displayImage = profile.foto_url || (profile.fotos && profile.fotos.length > 0 ? profile.fotos[0] : null);
-                    return (
-                      <Link key={profile.id} to={`/profile/${profile.id}`}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className={`group p-4 rounded-xl bg-gradient-card border transition-all hover:border-primary/50 cursor-pointer mb-4 ${
-                            profile.is_premium ? "border-primary/30" : "border-border"
-                          }`}
-                        >
-                          <div className="flex gap-4">
-                            <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
-                              {displayImage ? (
-                                <img src={displayImage} alt={profile.nome} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background flex items-center justify-center">
-                                  <Crown className="w-8 h-8 text-primary/20" />
-                                </div>
-                              )}
-                              {profile.is_premium && <Crown className="absolute top-2 left-2 w-4 h-4 text-primary z-10" />}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">
-                                {profile.nome}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1 truncate">
-                                <MapPin className="w-3.5 h-3.5" />
-                                {profile.localizacao || "Localização não informada"}
-                              </p>
-                              <div className="flex flex-wrap gap-1.5 mb-3">
-                                {profile.servicos?.slice(0, 3).map((s: string) => (
-                                  <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{s}</span>
-                                ))}
-                                {profile.servicos?.length > 3 && (
-                                  <span className="text-[10px] text-muted-foreground">+{profile.servicos.length - 3}</span>
-                                )}
+                  {filteredProfiles.map((profile, index) => (
+                    <Link key={profile.id} to={`/profile/${profile.id}`}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={`group p-4 rounded-xl bg-gradient-card border transition-all hover:border-primary/50 cursor-pointer mb-4 ${
+                          profile.is_premium ? "border-primary/30" : "border-border"
+                        }`}
+                      >
+                        <div className="flex gap-4">
+                          {/* Vignette photo */}
+                          <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
+                            <ProfileImage profile={profile} />
+                            {profile.is_premium && (
+                              <div className="absolute top-1 left-1 z-10">
+                                <Crown className="w-4 h-4 text-primary drop-shadow-lg" />
                               </div>
-                              <div className="flex gap-2 mt-3">
-                                <Button variant="neon" size="sm" className="flex-1 gap-1.5">
-                                  <MessageCircle className="w-4 h-4" /> WhatsApp
-                                </Button>
-                              </div>
-                            </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                           </div>
-                        </motion.div>
-                      </Link>
-                    );
-                  })}
+
+                          {/* Infos */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                              {profile.nome}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1 truncate">
+                              <MapPin className="w-3.5 h-3.5 shrink-0" />
+                              {profile.localizacao || "Localização não informada"}
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {profile.servicos?.slice(0, 3).map((s: string) => (
+                                <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground whitespace-nowrap">
+                                  {s}
+                                </span>
+                              ))}
+                              {profile.servicos?.length > 3 && (
+                                <span className="text-[10px] text-muted-foreground self-center">
+                                  +{profile.servicos.length - 3}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              variant="neon"
+                              size="sm"
+                              className="gap-1.5 w-full"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (profile.telefone) {
+                                  const digits = profile.telefone.replace(/\D/g, "");
+                                  window.open(`https://wa.me/55${digits}`, "_blank");
+                                }
+                              }}
+                            >
+                              <MessageCircle className="w-4 h-4" /> WHATSAPP
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
