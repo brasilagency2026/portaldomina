@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { supabase } from "@/lib/supabase";
-import { MOCK_PROFILES } from "@/lib/mockData";
 
 const ICON_MAP: Record<string, any> = {
   "Local Próprio": Home,
@@ -30,22 +29,30 @@ const Profile = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.from("perfis").select("*").eq("id", id).single();
-      if (error || !data) {
-        setProfile(MOCK_PROFILES.find(p => p.id === id));
-      } else {
-        setProfile(data);
-      }
+      if (error) throw error;
+      setProfile(data);
     } catch (err) {
-      setProfile(MOCK_PROFILES.find(p => p.id === id));
+      console.error("Erro ao buscar perfil:", err);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin w-12 h-12 text-primary" /></div>;
-  if (!profile) return <div className="min-h-screen flex items-center justify-center">Perfil não encontrado</div>;
+  
+  if (!profile) return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-32 text-center">
+        <h1 className="text-2xl font-bold mb-4">Perfil não encontrado</h1>
+        <Button asChild><Link to="/explorar">Voltar para a busca</Link></Button>
+      </div>
+      <Footer />
+    </div>
+  );
 
-  const allPhotos = profile.fotos?.length > 0 ? profile.fotos : [profile.foto_url];
+  const allPhotos = profile.fotos?.length > 0 ? profile.fotos : (profile.foto_url ? [profile.foto_url] : []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,7 +67,13 @@ const Profile = () => {
             {/* Gallery Section */}
             <div className="space-y-4">
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-border bg-muted shadow-premium">
-                <img src={allPhotos[activePhoto]} alt={profile.nome} className="w-full h-full object-cover" />
+                {allPhotos.length > 0 ? (
+                  <img src={allPhotos[activePhoto]} alt={profile.nome} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-background">
+                    <Shield className="w-20 h-20 text-primary/20" />
+                  </div>
+                )}
                 {profile.is_premium && (
                   <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-sm font-semibold neon-glow">
                     <Crown className="w-4 h-4" /> Premium
@@ -88,7 +101,7 @@ const Profile = () => {
                 <h1 className="font-display text-4xl md:text-5xl font-bold mb-2 neon-text">{profile.nome}</h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="w-4 h-4 text-primary" />
-                  <span>{profile.localizacao}</span>
+                  <span>{profile.localizacao || "Localização não informada"}</span>
                 </div>
               </div>
 
@@ -115,11 +128,11 @@ const Profile = () => {
               <div>
                 <h3 className="font-display text-xl font-semibold mb-4">Serviços & Especialidades</h3>
                 <div className="flex flex-wrap gap-2">
-                  {profile.servicos?.map((s: string) => (
+                  {profile.servicos?.length > 0 ? profile.servicos.map((s: string) => (
                     <span key={s} className="px-4 py-2 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20">
                       {s}
                     </span>
-                  ))}
+                  )) : <p className="text-sm text-muted-foreground">Nenhum serviço listado.</p>}
                 </div>
               </div>
 

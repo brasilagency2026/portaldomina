@@ -4,7 +4,6 @@ import { Crown, MapPin, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { MOCK_PROFILES } from "@/lib/mockData";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
   const displayImage = profile.foto_url || (Array.isArray(profile.fotos) && profile.fotos.length > 0 ? profile.fotos[0] : null);
@@ -34,7 +33,7 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
             {profile.is_premium && (
-              <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-xs font-semibold neon-glow">
+              <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-neon text-primary-foreground text-sm font-semibold neon-glow">
                 <Crown className="w-3.5 h-3.5" />
                 Premium
               </div>
@@ -79,33 +78,18 @@ const FeaturedProfiles = () => {
     
     const fetchFeatured = async () => {
       try {
-        // 1. Tenta buscar perfis aprovados
-        let { data, error } = await supabase
+        const { data, error } = await supabase
           .from("perfis")
           .select("*")
           .eq("status", "approved")
           .order("is_premium", { ascending: false })
           .limit(8);
 
-        // 2. Se não houver aprovados, tenta buscar QUALQUER perfil real (para não mostrar mocks se houver dados)
-        if (!data || data.length === 0) {
-          const { data: allData } = await supabase
-            .from("perfis")
-            .select("*")
-            .limit(8);
-          data = allData;
-        }
-
         if (mounted) {
-          if (!data || data.length === 0) {
-            // 3. Só usa mocks se o banco estiver realmente vazio
-            setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
-          } else {
-            setProfiles(data);
-          }
+          setProfiles(data || []);
         }
       } catch (err) {
-        if (mounted) setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
+        console.error("Erro ao buscar destaques:", err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -114,6 +98,8 @@ const FeaturedProfiles = () => {
     fetchFeatured();
     return () => { mounted = false; };
   }, []);
+
+  if (!loading && profiles.length === 0) return null;
 
   return (
     <section className="py-24 relative">

@@ -7,7 +7,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import GoogleMap from "@/components/explore/GoogleMap";
 import { supabase } from "@/lib/supabase";
-import { MOCK_PROFILES } from "@/lib/mockData";
 import {
   Popover,
   PopoverContent,
@@ -56,28 +55,11 @@ const Explorar = () => {
 
       const { data, error } = await query.order("is_premium", { ascending: false });
       
-      if (error || !data || data.length === 0) {
-        let filteredMock = premiumOnly 
-          ? MOCK_PROFILES.filter(p => p.is_premium) 
-          : MOCK_PROFILES;
-        
-        if (selectedServices.length > 0) {
-          filteredMock = filteredMock.filter(p => 
-            selectedServices.every(s => p.servicos?.includes(s))
-          );
-        }
-        setProfiles(filteredMock);
-      } else {
-        setProfiles(data);
-      }
+      if (error) throw error;
+      setProfiles(data || []);
     } catch (err) {
-      let filteredMock = premiumOnly ? MOCK_PROFILES.filter(p => p.is_premium) : MOCK_PROFILES;
-      if (selectedServices.length > 0) {
-        filteredMock = filteredMock.filter(p => 
-          selectedServices.every(s => p.servicos?.includes(s))
-        );
-      }
-      setProfiles(filteredMock);
+      console.error("Erro ao buscar perfis:", err);
+      setProfiles([]);
     } finally {
       setLoading(false);
     }
@@ -228,7 +210,9 @@ const Explorar = () => {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
+                                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background flex items-center justify-center">
+                                  <Crown className="w-8 h-8 text-primary/20" />
+                                </div>
                               )}
                               {profile.is_premium && <Crown className="absolute top-2 left-2 w-4 h-4 text-primary z-10" />}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -237,7 +221,7 @@ const Explorar = () => {
                               <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">
                                 {profile.nome}
                               </h3>
-                              <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                              <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1 truncate">
                                 <MapPin className="w-3.5 h-3.5" />
                                 {profile.localizacao || "Localização não informada"}
                               </p>

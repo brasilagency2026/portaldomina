@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { MapPin, Loader2 } from "lucide-react";
 import GoogleMap from "@/components/explore/GoogleMap";
 import { supabase } from "@/lib/supabase";
-import { MOCK_PROFILES } from "@/lib/mockData";
 import { useNavigate } from "react-router-dom";
 
 const MapSection = () => {
@@ -15,48 +14,27 @@ const MapSection = () => {
     let mounted = true;
 
     const fetchProfiles = async () => {
-      console.log("[MapSection] Iniciando busca de perfis para o mapa...");
-      
-      const timeoutId = setTimeout(() => {
-        if (mounted && loading) {
-          console.warn("[MapSection] Timeout atingido. Usando dados mock.");
-          setProfiles(MOCK_PROFILES);
-          setLoading(false);
-        }
-      }, 5000);
-
       try {
         const { data, error } = await supabase
           .from("perfis")
           .select("*")
           .eq("status", "approved");
         
-        clearTimeout(timeoutId);
-        
         if (mounted) {
-          if (error || !data || data.length === 0) {
-            console.log("[MapSection] Usando dados MOCK");
-            setProfiles(MOCK_PROFILES);
-          } else {
-            console.log("[MapSection] Perfis reais carregados para o mapa:", data.length);
-            setProfiles(data || []);
-          }
+          setProfiles(data || []);
         }
       } catch (err) {
-        console.error("[MapSection] Erro:", err);
-        if (mounted) {
-          setProfiles(MOCK_PROFILES);
-        }
+        console.error("Erro ao carregar mapa:", err);
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
     fetchProfiles();
     return () => { mounted = false; };
   }, []);
+
+  if (!loading && profiles.length === 0) return null;
 
   return (
     <section className="py-24 bg-background relative overflow-hidden">
