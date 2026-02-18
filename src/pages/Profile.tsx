@@ -32,6 +32,9 @@ const Profile = () => {
       );
       if (error) throw error;
       setProfile(data);
+
+      // Enregistre une vue
+      await supabase.from("profile_views").insert({ perfil_id: id });
     } catch (err) {
       console.error("Erro ao buscar perfil:", err);
       setProfile(null);
