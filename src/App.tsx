@@ -17,6 +17,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import ParaProfissionais from "./pages/ParaProfissionais";
+import ComoFunciona from "./pages/ComoFunciona";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/para-profissionais" element={<ParaProfissionais />} />
+            <Route path="/como-funciona" element={<ComoFunciona />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
