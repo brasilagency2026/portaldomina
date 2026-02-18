@@ -6,8 +6,7 @@ import {
   User, 
   LogIn, 
   LogOut, 
-  LayoutDashboard,
-  Crown
+  LayoutDashboard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/components/auth/SessionProvider";
@@ -51,10 +50,14 @@ const Header = () => {
     >
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between">
-          {/* Logo Corrigido para BDSMBRAZIL */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center shadow-neon group-hover:scale-110 transition-transform">
-              <Crown className="w-6 h-6 text-black" />
+          {/* Logo com o novo símbolo BDSM */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <img 
+                src="/symbolbdsmtransparent.png" 
+                alt="BDSMBRAZIL Logo" 
+                className="w-full h-full object-contain drop-shadow-neon"
+              />
             </div>
             <span className="font-display text-2xl font-bold tracking-tighter">
               BDSM<span className="text-gradient-gold">BRAZIL</span>
@@ -64,7 +67,6 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link to="/explorar" className="text-sm font-medium hover:text-primary transition-colors">Explorar</Link>
-            {/* Link do Mapa corrigido para /explorar que contém o mapa */}
             <Link to="/explorar" className="text-sm font-medium hover:text-primary transition-colors">Mapa</Link>
             <Link to="/premium" className="text-sm font-medium hover:text-primary transition-colors">Premium</Link>
           </div>

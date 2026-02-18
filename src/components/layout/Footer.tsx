@@ -1,4 +1,4 @@
-import { Crown, Instagram, Twitter } from "lucide-react";
+import { Instagram, Twitter } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -31,8 +31,12 @@ const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-gradient-gold flex items-center justify-center">
-                <Crown className="w-6 h-6 text-primary-foreground" />
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img 
+                  src="/symbolbdsmtransparent.png" 
+                  alt="BDSMBRAZIL Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="font-display text-2xl font-bold text-gradient-gold">
                 BDSMBRAZIL
