@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Loader2 } from "lucide-react";
 import GoogleMap from "@/components/explore/GoogleMap";
-import { supabase } from "@/lib/supabase";
+import { supabase, withTimeout } from "@/lib/supabaseQuery";
 import { useNavigate } from "react-router-dom";
 
 const MapSection = () => {
@@ -15,16 +15,16 @@ const MapSection = () => {
 
     const fetchProfiles = async () => {
       try {
-        const { data, error } = await supabase
-          .from("perfis")
-          .select("*")
-          .eq("status", "approved");
-        
-        if (mounted) {
-          setProfiles(data || []);
-        }
+        const { data } = await withTimeout(
+          supabase
+            .from("perfis")
+            .select("id, nome, lat, lng, is_premium")
+            .eq("status", "approved")
+        );
+        if (mounted) setProfiles(data || []);
       } catch (err) {
         console.error("Erro ao carregar mapa:", err);
+        if (mounted) setProfiles([]);
       } finally {
         if (mounted) setLoading(false);
       }

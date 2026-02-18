@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Crown, MapPin, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase, withTimeout } from "@/lib/supabaseQuery";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
   const displayImage = profile.foto_url || (Array.isArray(profile.fotos) && profile.fotos.length > 0 ? profile.fotos[0] : null);
@@ -15,13 +15,13 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, delay: index * 0.1 }}
-        className="group relative rounded-2xl overflow-hidden cursor-pointer premium-glow"
+        className="group relative rounded-2xl overflow-hidden cursor-pointer"
       >
         <div className="bg-gradient-card border border-primary/30 rounded-2xl overflow-hidden transition-all group-hover:border-primary/50">
           <div className="relative aspect-[3/4] overflow-hidden bg-muted">
             {displayImage ? (
-              <img 
-                src={displayImage} 
+              <img
+                src={displayImage}
                 alt={profile.nome}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
@@ -75,21 +75,21 @@ const FeaturedProfiles = () => {
 
   useEffect(() => {
     let mounted = true;
-    
+
     const fetchFeatured = async () => {
       try {
-        const { data, error } = await supabase
-          .from("perfis")
-          .select("*")
-          .eq("status", "approved")
-          .order("is_premium", { ascending: false })
-          .limit(8);
-
-        if (mounted) {
-          setProfiles(data || []);
-        }
+        const { data } = await withTimeout(
+          supabase
+            .from("perfis")
+            .select("id, nome, localizacao, servicos, fotos, foto_url, is_premium")
+            .eq("status", "approved")
+            .order("is_premium", { ascending: false })
+            .limit(8)
+        );
+        if (mounted) setProfiles(data || []);
       } catch (err) {
         console.error("Erro ao buscar destaques:", err);
+        if (mounted) setProfiles([]);
       } finally {
         if (mounted) setLoading(false);
       }

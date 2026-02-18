@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Crown, MapPin, MessageCircle, Navigation, ArrowLeft, Shield, Home, Hotel, Car, Plane, PartyPopper, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { supabase } from "@/lib/supabase";
+import { supabase, withTimeout } from "@/lib/supabaseQuery";
 
 const ICON_MAP: Record<string, any> = {
   "Local Próprio": Home,
@@ -28,7 +27,9 @@ const Profile = () => {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("perfis").select("*").eq("id", id).single();
+      const { data, error } = await withTimeout(
+        supabase.from("perfis").select("*").eq("id", id).single()
+      );
       if (error) throw error;
       setProfile(data);
     } catch (err) {
@@ -39,8 +40,12 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin w-12 h-12 text-primary" /></div>;
-  
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="animate-spin w-12 h-12 text-primary" />
+    </div>
+  );
+
   if (!profile) return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -64,7 +69,6 @@ const Profile = () => {
 
         <div className="container mx-auto px-4 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Gallery Section */}
             <div className="space-y-4">
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-border bg-muted shadow-premium">
                 {allPhotos.length > 0 ? (
@@ -83,8 +87,8 @@ const Profile = () => {
               {allPhotos.length > 1 && (
                 <div className="grid grid-cols-5 gap-2">
                   {allPhotos.map((url: string, i: number) => (
-                    <button 
-                      key={i} 
+                    <button
+                      key={i}
                       onClick={() => setActivePhoto(i)}
                       className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"}`}
                     >
@@ -95,7 +99,6 @@ const Profile = () => {
               )}
             </div>
 
-            {/* Info Section */}
             <div className="space-y-8">
               <div>
                 <h1 className="font-display text-4xl md:text-5xl font-bold mb-2 neon-text">{profile.nome}</h1>
@@ -105,7 +108,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Atendimento */}
               {profile.atendimento?.length > 0 && (
                 <div className="flex flex-wrap gap-4">
                   {profile.atendimento.map((local: string) => {
