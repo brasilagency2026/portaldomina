@@ -6,7 +6,19 @@ import { Link } from "react-router-dom";
 import { supabase, safeFetch } from "@/lib/supabaseQuery";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
-  const displayImage = profile.foto_url || (Array.isArray(profile.fotos) && profile.fotos.length > 0 ? profile.fotos[0] : null);
+  const [imgError, setImgError] = useState(false);
+
+  // Cherche la première image disponible dans fotos[] ou foto_url
+  const getDisplayImage = () => {
+    if (Array.isArray(profile.fotos) && profile.fotos.length > 0) {
+      const validFoto = profile.fotos.find((f: string) => f && f.startsWith("http"));
+      if (validFoto) return validFoto;
+    }
+    if (profile.foto_url && profile.foto_url.startsWith("http")) return profile.foto_url;
+    return null;
+  };
+
+  const displayImage = imgError ? null : getDisplayImage();
 
   return (
     <Link to={`/profile/${profile.id}`}>
@@ -25,6 +37,7 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
                 alt={profile.nome}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
+                onError={() => setImgError(true)}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background flex items-center justify-center">
@@ -89,6 +102,7 @@ const FeaturedProfiles = () => {
         if (data === null) {
           setError("Não foi possível carregar os perfis.");
         } else {
+          console.log("[FeaturedProfiles] Profiles loaded:", data);
           setProfiles(data as any[]);
         }
         setLoading(false);
