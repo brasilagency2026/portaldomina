@@ -1,6 +1,5 @@
 /// <reference types="google.maps" />
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface MapMarker {
   id: number | string;
@@ -8,6 +7,7 @@ interface MapMarker {
   lat: number;
   lng: number;
   isPremium: boolean;
+  slug?: string;
 }
 
 interface GoogleMapProps {
@@ -20,7 +20,6 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const checkGoogleMaps = () => {
@@ -37,7 +36,7 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
     if (!isLoaded || !mapRef.current) return;
 
     const map = new google.maps.Map(mapRef.current, {
-      center: { lat: -23.5505, lng: -46.6333 }, // São Paulo
+      center: { lat: -23.5505, lng: -46.6333 },
       zoom: 12,
       styles: [
         { elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
@@ -71,6 +70,8 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
     const bounds = new google.maps.LatLngBounds();
 
     markers.forEach((m) => {
+      const profileUrl = `/profile/${m.slug || m.id}`;
+
       const marker = new google.maps.Marker({
         position: { lat: m.lat, lng: m.lng },
         map: mapInstanceRef.current!,
@@ -88,12 +89,12 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       const infoWindow = new google.maps.InfoWindow({
         content: `
           <div style="color:#1a1a2e;padding:8px;min-width:150px;font-family:sans-serif;">
-            <a href="/profile/${m.id}" style="text-decoration:none; color:inherit;">
+            <a href="${profileUrl}" style="text-decoration:none; color:inherit;">
               <div style="font-weight:700;font-size:16px;margin-bottom:10px;color:#000; cursor:pointer;">
                 ${m.isPremium ? "👑 " : ""}${m.name}
               </div>
             </a>
-            <a href="/profile/${m.id}" style="display:block;background:#E11D48;color:white;text-align:center;padding:8px 12px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;transition:background 0.2s;">
+            <a href="${profileUrl}" style="display:block;background:#E11D48;color:white;text-align:center;padding:8px 12px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;">
               Ver Perfil Completo
             </a>
           </div>

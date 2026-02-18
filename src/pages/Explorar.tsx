@@ -25,13 +25,11 @@ const LISTA_SERVICOS = [
   "Chuva dourada", "Chuva marrom", "Ballbusting"
 ];
 
-// Composant image avec fallback robuste
 const ProfileImage = ({ profile }: { profile: any }) => {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    // Cherche la première image valide
     if (Array.isArray(profile.fotos) && profile.fotos.length > 0) {
       const valid = profile.fotos.find((f: string) => f && f.startsWith("http"));
       if (valid) { setImgSrc(valid); return; }
@@ -184,7 +182,10 @@ const Explorar = () => {
             <div className="lg:w-1/2 xl:w-3/5">
               <div className="sticky top-44 rounded-2xl overflow-hidden border border-border bg-card aspect-[4/3] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                 <GoogleMap
-                  onMarkerClick={(id) => navigate(`/profile/${id}`)}
+                  onMarkerClick={(id) => {
+                    const profile = profiles.find(p => p.id === id);
+                    navigate(`/profile/${profile?.slug || id}`);
+                  }}
                   markers={filteredProfiles.map((p) => ({
                     id: p.id,
                     name: p.nome,
@@ -222,7 +223,7 @@ const Explorar = () => {
               ) : (
                 <div className="space-y-4">
                   {filteredProfiles.map((profile, index) => (
-                    <Link key={profile.id} to={`/profile/${profile.id}`}>
+                    <Link key={profile.id} to={`/profile/${profile.slug || profile.id}`}>
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -232,7 +233,6 @@ const Explorar = () => {
                         }`}
                       >
                         <div className="flex gap-4">
-                          {/* Vignette photo */}
                           <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
                             <ProfileImage profile={profile} />
                             {profile.is_premium && (
@@ -243,7 +243,6 @@ const Explorar = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                           </div>
 
-                          {/* Infos */}
                           <div className="flex-1 min-w-0">
                             <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">
                               {profile.nome}

@@ -15,27 +15,39 @@ const ICON_MAP: Record<string, any> = {
   "Eventos": PartyPopper
 };
 
+// Vérifie si c'est un UUID valide
+const isUUID = (str: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 const Profile = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
 
   useEffect(() => {
-    fetchProfile();
-  }, [id]);
+    if (slug) fetchProfile(slug);
+  }, [slug]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (identifier: string) => {
     setLoading(true);
     try {
-      const { data, error } = await withTimeout(
-        supabase.from("perfis").select("*").eq("id", id).single()
-      );
+      let query;
+
+      if (isUUID(identifier)) {
+        // Rétrocompatibilité : anciens liens avec UUID
+        query = supabase.from("perfis").select("*").eq("id", identifier).single();
+      } else {
+        // Nouveau : recherche par slug
+        query = supabase.from("perfis").select("*").eq("slug", identifier).single();
+      }
+
+      const { data, error } = await withTimeout(query);
       if (error) throw error;
       setProfile(data);
 
       // Enregistre une vue
-      await supabase.from("profile_views").insert({ perfil_id: id });
+      await supabase.from("profile_views").insert({ perfil_id: data.id });
     } catch (err) {
       console.error("Erro ao buscar perfil:", err);
       setProfile(null);
@@ -55,13 +67,13 @@ const Profile = () => {
     return `https://waze.com/ul?ll=${profile.lat},${profile.lng}&navigate=yes`;
   };
 
-  // Données OG pour le partage
+  const profileSlug = profile?.slug || profile?.id;
   const ogImage = profile?.fotos?.[0] || profile?.foto_url || "https://bmivfqpopjgozwjoustr.supabase.co/storage/v1/object/public/profiles/og-default.jpg";
   const ogTitle = profile ? `${profile.nome} | BDSMBRAZIL` : "BDSMBRAZIL";
   const ogDescription = profile?.bio
     ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
     : "Profissional verificada no maior portal BDSM do Brasil.";
-  const ogUrl = `https://bdsmbrazil.com.br/profile/${id}`;
+  const ogUrl = `https://bdsmbrazil.com.br/profile/${profileSlug}`;
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -89,8 +101,6 @@ const Profile = () => {
       <Helmet>
         <title>{ogTitle}</title>
         <meta name="description" content={ogDescription} />
-
-        {/* Open Graph — Facebook, WhatsApp, Telegram */}
         <meta property="og:type" content="profile" />
         <meta property="og:url" content={ogUrl} />
         <meta property="og:title" content={ogTitle} />
@@ -100,8 +110,6 @@ const Profile = () => {
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="BDSMBRAZIL" />
         <meta property="og:locale" content="pt_BR" />
-
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={ogTitle} />
         <meta name="twitter:description" content={ogDescription} />
@@ -191,7 +199,7 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Bouton Compartilhar */}
+              {/* Compartilhar */}
               <div className="p-4 rounded-xl bg-secondary/30 border border-border">
                 <p className="text-sm text-muted-foreground mb-3 font-medium">Compartilhar perfil:</p>
                 <div className="flex gap-3 flex-wrap">
@@ -219,9 +227,7 @@ const Profile = () => {
                     variant="outline"
                     size="sm"
                     className="gap-2 border-border"
-                    onClick={() => {
-                      navigator.clipboard.writeText(ogUrl);
-                    }}
+                    onClick={() => navigator.clipboard.writeText(ogUrl)}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                     Copiar Link

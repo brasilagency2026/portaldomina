@@ -8,7 +8,6 @@ import { supabase, safeFetch } from "@/lib/supabaseQuery";
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
   const [imgError, setImgError] = useState(false);
 
-  // Cherche la première image disponible dans fotos[] ou foto_url
   const getDisplayImage = () => {
     if (Array.isArray(profile.fotos) && profile.fotos.length > 0) {
       const validFoto = profile.fotos.find((f: string) => f && f.startsWith("http"));
@@ -19,9 +18,10 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
   };
 
   const displayImage = imgError ? null : getDisplayImage();
+  const profileUrl = `/profile/${profile.slug || profile.id}`;
 
   return (
-    <Link to={`/profile/${profile.id}`}>
+    <Link to={profileUrl}>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ const FeaturedProfiles = () => {
       const data = await safeFetch(
         () => supabase
           .from("perfis")
-          .select("id, nome, localizacao, servicos, fotos, foto_url, is_premium")
+          .select("id, slug, nome, localizacao, servicos, fotos, foto_url, is_premium")
           .eq("status", "approved")
           .order("is_premium", { ascending: false })
           .limit(8),
@@ -102,7 +102,6 @@ const FeaturedProfiles = () => {
         if (data === null) {
           setError("Não foi possível carregar os perfis.");
         } else {
-          console.log("[FeaturedProfiles] Profiles loaded:", data);
           setProfiles(data as any[]);
         }
         setLoading(false);
