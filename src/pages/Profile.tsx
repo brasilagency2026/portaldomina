@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Crown, MapPin, MessageCircle, Navigation, ArrowLeft, Shield, Home, Hotel, Car, Plane, PartyPopper, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
@@ -54,6 +55,14 @@ const Profile = () => {
     return `https://waze.com/ul?ll=${profile.lat},${profile.lng}&navigate=yes`;
   };
 
+  // Données OG pour le partage
+  const ogImage = profile?.fotos?.[0] || profile?.foto_url || "https://bmivfqpopjgozwjoustr.supabase.co/storage/v1/object/public/profiles/og-default.jpg";
+  const ogTitle = profile ? `${profile.nome} | BDSMBRAZIL` : "BDSMBRAZIL";
+  const ogDescription = profile?.bio
+    ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
+    : "Profissional verificada no maior portal BDSM do Brasil.";
+  const ogUrl = `https://bdsmbrazil.com.br/profile/${id}`;
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader2 className="animate-spin w-12 h-12 text-primary" />
@@ -77,6 +86,28 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{ogTitle}</title>
+        <meta name="description" content={ogDescription} />
+
+        {/* Open Graph — Facebook, WhatsApp, Telegram */}
+        <meta property="og:type" content="profile" />
+        <meta property="og:url" content={ogUrl} />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="BDSMBRAZIL" />
+        <meta property="og:locale" content="pt_BR" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDescription} />
+        <meta name="twitter:image" content={ogImage} />
+      </Helmet>
+
       <Header />
       <main className="pt-20">
         <div className="container mx-auto px-4 py-4">
@@ -157,6 +188,44 @@ const Profile = () => {
                       {s}
                     </span>
                   )) : <p className="text-sm text-muted-foreground">Nenhum serviço listado.</p>}
+                </div>
+              </div>
+
+              {/* Bouton Compartilhar */}
+              <div className="p-4 rounded-xl bg-secondary/30 border border-border">
+                <p className="text-sm text-muted-foreground mb-3 font-medium">Compartilhar perfil:</p>
+                <div className="flex gap-3 flex-wrap">
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(ogUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" size="sm" className="gap-2 border-blue-500/30 text-blue-400 hover:bg-blue-500/10">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                      Facebook
+                    </Button>
+                  </a>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`${ogTitle}\n${ogDescription}\n\n${ogUrl}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" size="sm" className="gap-2 border-green-500/30 text-green-400 hover:bg-green-500/10">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                      WhatsApp
+                    </Button>
+                  </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-border"
+                    onClick={() => {
+                      navigator.clipboard.writeText(ogUrl);
+                    }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    Copiar Link
+                  </Button>
                 </div>
               </div>
 
