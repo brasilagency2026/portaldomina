@@ -5,7 +5,7 @@
       "destination": "/api/profile/:slug"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
