@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Crown, MessageCircle, Loader2, Filter, Check } from "lucide-react";
+import { MapPin, Crown, MessageCircle, Loader2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -207,54 +207,57 @@ const Explorar = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {profiles.map((profile, index) => (
-                    <Link key={profile.id} to={`/profile/${profile.id}`}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className={`group p-4 rounded-xl bg-gradient-card border transition-all hover:border-primary/50 cursor-pointer mb-4 ${
-                          profile.is_premium ? "border-primary/30" : "border-border"
-                        }`}
-                      >
-                        <div className="flex gap-4">
-                          <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
-                            {profile.foto_url ? (
-                              <img 
-                                src={profile.foto_url} 
-                                alt={profile.nome}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
-                            )}
-                            {profile.is_premium && <Crown className="absolute top-2 left-2 w-4 h-4 text-primary z-10" />}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">
-                              {profile.nome}
-                            </h3>
-                            <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5" />
-                              {profile.localizacao || "Localização não informada"}
-                            </p>
-                            <div className="flex flex-wrap gap-1.5 mb-3">
-                              {profile.servicos?.slice(0, 3).map((s: string) => (
-                                <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{s}</span>
-                              ))}
-                              {profile.servicos?.length > 3 && (
-                                <span className="text-[10px] text-muted-foreground">+{profile.servicos.length - 3}</span>
+                  {profiles.map((profile, index) => {
+                    const displayImage = profile.foto_url || (profile.fotos && profile.fotos.length > 0 ? profile.fotos[0] : null);
+                    return (
+                      <Link key={profile.id} to={`/profile/${profile.id}`}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className={`group p-4 rounded-xl bg-gradient-card border transition-all hover:border-primary/50 cursor-pointer mb-4 ${
+                            profile.is_premium ? "border-primary/30" : "border-border"
+                          }`}
+                        >
+                          <div className="flex gap-4">
+                            <div className="relative w-24 h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
+                              {displayImage ? (
+                                <img 
+                                  src={displayImage} 
+                                  alt={profile.nome}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-background" />
                               )}
+                              {profile.is_premium && <Crown className="absolute top-2 left-2 w-4 h-4 text-primary z-10" />}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                             </div>
-                            <div className="flex gap-2 mt-3">
-                              <Button variant="neon" size="sm" className="flex-1 gap-1.5"><MessageCircle className="w-4 h-4" /> WhatsApp</Button>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-display text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                                {profile.nome}
+                              </h3>
+                              <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5" />
+                                {profile.localizacao || "Localização não informada"}
+                              </p>
+                              <div className="flex flex-wrap gap-1.5 mb-3">
+                                {profile.servicos?.slice(0, 3).map((s: string) => (
+                                  <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{s}</span>
+                                ))}
+                                {profile.servicos?.length > 3 && (
+                                  <span className="text-[10px] text-muted-foreground">+{profile.servicos.length - 3}</span>
+                                )}
+                              </div>
+                              <div className="flex gap-2 mt-3">
+                                <Button variant="neon" size="sm" className="flex-1 gap-1.5"><MessageCircle className="w-4 h-4" /> WhatsApp</Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    </Link>
-                  ))}
+                        </motion.div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

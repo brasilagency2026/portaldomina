@@ -7,6 +7,9 @@ import { supabase } from "@/lib/supabase";
 import { MOCK_PROFILES } from "@/lib/mockData";
 
 const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
+  // Tenta usar foto_url, se não existir, pega a primeira da galeria 'fotos'
+  const displayImage = profile.foto_url || (profile.fotos && profile.fotos.length > 0 ? profile.fotos[0] : null);
+
   return (
     <Link to={`/profile/${profile.id}`}>
       <motion.div
@@ -18,9 +21,9 @@ const ProfileCard = ({ profile, index }: { profile: any; index: number }) => {
       >
         <div className="bg-gradient-card border border-primary/30 rounded-2xl overflow-hidden transition-all group-hover:border-primary/50">
           <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-            {profile.foto_url ? (
+            {displayImage ? (
               <img 
-                src={profile.foto_url} 
+                src={displayImage} 
                 alt={profile.nome}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
@@ -75,18 +78,14 @@ const FeaturedProfiles = () => {
     let mounted = true;
     
     const fetchFeatured = async () => {
-      console.log("[FeaturedProfiles] Buscando perfis reais...");
-      
       const timeoutId = setTimeout(() => {
         if (mounted && loading) {
-          console.warn("[FeaturedProfiles] Timeout! Usando mocks.");
           setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
           setLoading(false);
         }
       }, 6000);
 
       try {
-        // Tenta buscar Premium primeiro
         let { data, error } = await supabase
           .from("perfis")
           .select("*")
@@ -94,7 +93,6 @@ const FeaturedProfiles = () => {
           .eq("is_premium", true)
           .limit(4);
         
-        // Se não houver premium, tenta buscar qualquer aprovado
         if (!data || data.length === 0) {
           const { data: anyApproved } = await supabase
             .from("perfis")
@@ -108,14 +106,12 @@ const FeaturedProfiles = () => {
 
         if (mounted) {
           if (!data || data.length === 0) {
-            console.log("[FeaturedProfiles] Banco vazio. Usando mocks.");
             setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
           } else {
             setProfiles(data);
           }
         }
       } catch (err) {
-        console.error("[FeaturedProfiles] Erro:", err);
         if (mounted) setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
       } finally {
         if (mounted) setLoading(false);
