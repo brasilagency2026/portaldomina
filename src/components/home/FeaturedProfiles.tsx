@@ -75,50 +75,50 @@ const FeaturedProfiles = () => {
     let mounted = true;
     
     const fetchFeatured = async () => {
-      console.log("[FeaturedProfiles] Iniciando busca de perfis...");
+      console.log("[FeaturedProfiles] Buscando perfis reais...");
       
-      // Timeout de segurança de 5 segundos
       const timeoutId = setTimeout(() => {
         if (mounted && loading) {
-          console.warn("[FeaturedProfiles] Timeout atingido. Usando dados mock.");
+          console.warn("[FeaturedProfiles] Timeout! Usando mocks.");
           setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
           setLoading(false);
         }
-      }, 5000);
+      }, 6000);
 
       try {
-        const { data, error } = await supabase
+        // Tenta buscar Premium primeiro
+        let { data, error } = await supabase
           .from("perfis")
           .select("*")
-          .eq("is_premium", true)
           .eq("status", "approved")
+          .eq("is_premium", true)
           .limit(4);
         
+        // Se não houver premium, tenta buscar qualquer aprovado
+        if (!data || data.length === 0) {
+          const { data: anyApproved } = await supabase
+            .from("perfis")
+            .select("*")
+            .eq("status", "approved")
+            .limit(4);
+          data = anyApproved;
+        }
+
         clearTimeout(timeoutId);
 
-        if (error) {
-          console.error("[FeaturedProfiles] Erro Supabase:", error);
-          throw error;
-        }
-        
         if (mounted) {
           if (!data || data.length === 0) {
-            console.log("[FeaturedProfiles] Nenhum perfil real encontrado. Usando mocks.");
+            console.log("[FeaturedProfiles] Banco vazio. Usando mocks.");
             setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
           } else {
-            console.log("[FeaturedProfiles] Perfis reais carregados:", data.length);
             setProfiles(data);
           }
         }
       } catch (err) {
-        console.error("[FeaturedProfiles] Erro crítico:", err);
-        if (mounted) {
-          setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
-        }
+        console.error("[FeaturedProfiles] Erro:", err);
+        if (mounted) setProfiles(MOCK_PROFILES.filter(p => p.is_premium).slice(0, 4));
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
