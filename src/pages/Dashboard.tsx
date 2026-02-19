@@ -24,6 +24,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!sessionLoading && user) {
       fetchPerfil();
+    } else if (!sessionLoading && !user) {
+      setLoading(false);
     }
   }, [user, sessionLoading]);
 
@@ -54,7 +56,7 @@ export default function Dashboard() {
     try {
       if (!user) return;
 
-      let { data, error } = await supabase
+      let { data } = await supabase
         .from("perfis")
         .select("*")
         .eq("id", user.id)
@@ -81,8 +83,32 @@ export default function Dashboard() {
     e.preventDefault();
     if (!perfil) return;
     const { error } = await supabase.from("perfis").update(perfil).eq("id", perfil.id);
-    if (error) toast.error("Erro ao atualizar perfil");
-    else toast.success("Perfil atualizado!");
+    if (error) {
+      toast.error("Erro ao atualizar perfil");
+      return;
+    }
+    
+    toast.success("Perfil atualizado!");
+
+    // Notifier l'admin de la modification
+    try {
+      await supabase.functions.invoke("notify-admin", {
+        body: {
+          type: "profile_updated",
+          perfil: {
+            id: perfil.id,
+            nome: perfil.nome,
+            email: perfil.email,
+            localizacao: perfil.localizacao,
+            bio: perfil.bio,
+            servicos: perfil.servicos,
+            telefone: perfil.telefone,
+          }
+        }
+      });
+    } catch (notifyErr) {
+      console.warn("[Dashboard] Could not notify admin:", notifyErr);
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +132,6 @@ export default function Dashboard() {
       const { data: { publicUrl } } = supabase.storage.from('profiles').getPublicUrl(fileName);
       const updatedFotos = [...(perfil.fotos || []), publicUrl];
       
-      // Persistência imediata no banco
       const { error: dbError } = await supabase
         .from("perfis")
         .update({ fotos: updatedFotos })
@@ -127,7 +152,6 @@ export default function Dashboard() {
     try {
       const updatedFotos = (perfil.fotos || []).filter((_: any, i: number) => i !== index);
       
-      // Persistência imediata no banco
       const { error: dbError } = await supabase
         .from("perfis")
         .update({ fotos: updatedFotos })
@@ -146,6 +170,12 @@ export default function Dashboard() {
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
       <Loader2 className="w-12 h-12 animate-spin text-primary" />
       <p className="text-muted-foreground">Carregando seu painel...</p>
+    </div>
+  );
+
+  if (!user) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <p className="text-muted-foreground">Você precisa estar logado para acessar o painel.</p>
     </div>
   );
 

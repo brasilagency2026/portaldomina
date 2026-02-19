@@ -26,7 +26,6 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     
-    // 1. Criar usuário no Auth
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -42,22 +41,35 @@ export default function Register() {
       return;
     }
 
-    // 2. Tentar criar o perfil na tabela 'perfis' imediatamente
+    // Créer le profil
     if (data.user) {
+      const newPerfil = { 
+        id: data.user.id, 
+        email: email, 
+        nome: nome,
+        status: 'pending',
+        role: 'user'
+      };
+
       const { error: profileError } = await supabase
         .from("perfis")
-        .insert([
-          { 
-            id: data.user.id, 
-            email: email, 
-            nome: nome,
-            status: 'pending',
-            role: 'user'
-          }
-        ]);
+        .insert([newPerfil]);
       
       if (profileError) {
-        console.warn("Aviso: Perfil será criado no primeiro login devido a restrições de RLS.");
+        console.warn("Aviso: Perfil será criado no primeiro login.");
+      }
+
+      // Notifier l'admin
+      try {
+        await supabase.functions.invoke("notify-admin", {
+          body: {
+            type: "new_registration",
+            perfil: { ...newPerfil, nome, email }
+          }
+        });
+        console.log("[Register] Admin notified");
+      } catch (notifyErr) {
+        console.warn("[Register] Could not notify admin:", notifyErr);
       }
     }
 
