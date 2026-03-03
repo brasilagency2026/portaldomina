@@ -1,9 +1,25 @@
+import { useEffect, useRef, useState } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { motion } from "framer-motion";
 import { Crown, Check, Sparkles, Zap, Eye, MapPin, Image, Video, BarChart3, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useSession } from "@/components/auth/SessionProvider";
+import { toast } from "sonner";
+
+declare global {
+  interface Window {
+    paypal?: {
+      Buttons: (options: {
+        style?: { layout?: "vertical" | "horizontal"; shape?: "rect" | "pill"; label?: "paypal" | "checkout" | "pay"; height?: number };
+        createOrder: () => Promise<string>;
+        onApprove: (data: { orderID: string }) => Promise<void>;
+        onError: (error: unknown) => void;
+      }) => { render: (selector: string) => Promise<void>; close: () => void };
+    };
+  }
+}
 
 const premiumFeatures = [
   { icon: MapPin, title: "Destaque no Mapa", desc: "Apareça em destaque no mapa interativo num raio de 20km da sua localização." },
@@ -34,6 +50,119 @@ const comparison = [
 ];
 
 const Premium = () => {
+  const { session, user } = useSession();
+  const [sdkReady, setSdkReady] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const paypalButtonsRef = useRef<{ close: () => void } | null>(null);
+  const containerId = "paypal-premium-button";
+  const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined;
+
+  useEffect(() => {
+    if (!paypalClientId) {
+      return;
+    }
+
+    const existing = document.querySelector('script[data-paypal-sdk="true"]') as HTMLScriptElement | null;
+
+    if (existing) {
+      if (window.paypal) {
+        setSdkReady(true);
+      } else {
+        existing.addEventListener("load", () => setSdkReady(true), { once: true });
+      }
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(paypalClientId)}&currency=BRL&intent=capture`;
+    script.async = true;
+    script.dataset.paypalSdk = "true";
+    script.onload = () => setSdkReady(true);
+    script.onerror = () => {
+      toast.error("Não foi possível carregar o PayPal.");
+    };
+
+    document.body.appendChild(script);
+  }, [paypalClientId]);
+
+  useEffect(() => {
+    if (!sdkReady || !window.paypal || !session?.access_token || !user) {
+      return;
+    }
+
+    const container = document.getElementById(containerId);
+    if (!container) {
+      return;
+    }
+
+    container.innerHTML = "";
+
+    const buttons = window.paypal.Buttons({
+      style: {
+        layout: "vertical",
+        shape: "rect",
+        label: "paypal",
+        height: 48,
+      },
+      createOrder: async () => {
+        setIsProcessing(true);
+        const response = await fetch("/api/paypal/create-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ premiumPlan: "monthly" }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data?.id) {
+          setIsProcessing(false);
+          throw new Error(data?.error || "Falha ao criar pagamento no PayPal");
+        }
+
+        return data.id as string;
+      },
+      onApprove: async (data) => {
+        const response = await fetch("/api/paypal/capture-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ orderID: data.orderID }),
+        });
+
+        const result = await response.json();
+        setIsProcessing(false);
+
+        if (!response.ok) {
+          toast.error(result?.error || "Pagamento não concluído");
+          return;
+        }
+
+        toast.success("Pagamento confirmado! Seu perfil Premium foi ativado.");
+      },
+      onError: (error) => {
+        setIsProcessing(false);
+        console.error("[PayPal] error:", error);
+        toast.error("Erro no processamento do PayPal.");
+      },
+    });
+
+    paypalButtonsRef.current = buttons;
+    buttons.render(`#${containerId}`).catch((error) => {
+      console.error("[PayPal] render error:", error);
+      toast.error("Não foi possível iniciar o checkout PayPal.");
+    });
+
+    return () => {
+      paypalButtonsRef.current?.close();
+      paypalButtonsRef.current = null;
+    };
+  }, [sdkReady, session?.access_token, user]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -58,12 +187,21 @@ const Premium = () => {
                 <span className="text-5xl md:text-6xl font-bold text-gradient-gold">R$ 49,90</span>
                 <span className="text-xl text-muted-foreground">/mês</span>
               </div>
-              <Button variant="gold" size="xl" className="gap-2" asChild>
-                <Link to="/register">
-                  <Crown className="w-5 h-5" />
-                  Assinar Premium
-                </Link>
-              </Button>
+              {!user ? (
+                <Button variant="gold" size="xl" className="gap-2" asChild>
+                  <Link to="/login">
+                    <Crown className="w-5 h-5" />
+                    Entrar para Assinar Premium
+                  </Link>
+                </Button>
+              ) : (
+                <div className="max-w-sm mx-auto space-y-3">
+                  <div id={containerId} />
+                  <p className="text-sm text-muted-foreground">
+                    {isProcessing ? "Processando pagamento..." : "Pagamento seguro via PayPal"}
+                  </p>
+                </div>
+              )}
             </motion.div>
           </div>
         </section>
@@ -147,12 +285,21 @@ const Premium = () => {
             </motion.div>
 
             <div className="text-center mt-12">
-              <Button variant="gold" size="xl" className="gap-2" asChild>
-                <Link to="/register">
-                  <Crown className="w-5 h-5" />
-                  Assinar Premium — R$ 49,90/mês
-                </Link>
-              </Button>
+              {!user ? (
+                <Button variant="gold" size="xl" className="gap-2" asChild>
+                  <Link to="/login">
+                    <Crown className="w-5 h-5" />
+                    Entrar para Assinar Premium
+                  </Link>
+                </Button>
+              ) : (
+                <Button variant="gold" size="xl" className="gap-2" asChild>
+                  <a href={`#${containerId}`}>
+                    <Crown className="w-5 h-5" />
+                    Assinar Premium — R$ 49,90/mês
+                  </a>
+                </Button>
+              )}
               <p className="text-sm text-muted-foreground mt-4">
                 Cancele a qualquer momento • Sem fidelidade
               </p>

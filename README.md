@@ -19,7 +19,25 @@ Ce projet est prêt à être hébergé de manière autonome.
 3. **Important** : Dans les paramètres du projet sur Vercel, ajoutez les variables d'environnement suivantes :
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `VITE_PAYPAL_CLIENT_ID`
+   - `PAYPAL_CLIENT_ID`
+   - `PAYPAL_CLIENT_SECRET`
+   - `PAYPAL_API_BASE` (sandbox: `https://api-m.sandbox.paypal.com`, prod: `https://api-m.paypal.com`)
 4. Cliquez sur **Deploy**.
+
+## 4. Paiement Premium via PayPal
+Le checkout PayPal est intégré sur la page `/premium`.
+
+### Flux implémenté
+1. L'utilisateur connecté clique sur le bouton PayPal.
+2. `POST /api/paypal/create-order` crée une commande PayPal de `49.90 BRL`.
+3. Après validation, `POST /api/paypal/capture-order` capture le paiement.
+4. Le backend met à jour `public.perfis.is_premium = true` et enregistre une ligne dans `public.pagamentos`.
+
+### Important
+- Le paiement est actuellement un **paiement unique** (capture immédiate) de `R$ 49,90`.
+- Si vous souhaitez un **abonnement mensuel récurrent**, il faudra passer au flux PayPal Subscriptions (plan PayPal + `intent=subscription`).
 
 ## Technologies
 - React + Vite
