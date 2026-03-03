@@ -6,11 +6,18 @@ function sendJson(res: VercelResponse, status: number, payload: unknown) {
 }
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
-  const clientId = process.env.VITE_PAYPAL_CLIENT_ID || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID;
-  const premiumPlanId = process.env.VITE_PAYPAL_PREMIUM_PLAN_ID || process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID;
+  const clientId =
+    process.env.PAYPAL_PUBLIC_CLIENT_ID ||
+    process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+    process.env.VITE_PAYPAL_CLIENT_ID ||
+    process.env.PAYPAL_CLIENT_ID;
+  const premiumPlanId =
+    process.env.PAYPAL_PREMIUM_PLAN_ID ||
+    process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID ||
+    process.env.VITE_PAYPAL_PREMIUM_PLAN_ID;
 
   return sendJson(res, 200, {
-    clientId: clientId || null,
-    premiumPlanId: premiumPlanId || null,
+    clientId: clientId?.trim() || null,
+    premiumPlanId: premiumPlanId?.trim() || null,
   });
 }

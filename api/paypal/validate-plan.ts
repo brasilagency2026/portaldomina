@@ -56,9 +56,12 @@ async function getPayPalAccessToken() {
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
-    const planId = process.env.VITE_PAYPAL_PREMIUM_PLAN_ID || process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID;
+    const planId =
+      process.env.PAYPAL_PREMIUM_PLAN_ID ||
+      process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID ||
+      process.env.VITE_PAYPAL_PREMIUM_PLAN_ID;
 
-    if (!planId) {
+    if (!planId?.trim()) {
       return sendJson(res, 200, {
         valid: false,
         message: "PAYPAL plan id ausente no ambiente",
@@ -67,7 +70,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
 
     const { accessToken, baseUrl } = await getPayPalAccessToken();
 
-    const response = await fetch(`${baseUrl}/v1/billing/plans/${encodeURIComponent(planId)}`, {
+    const response = await fetch(`${baseUrl}/v1/billing/plans/${encodeURIComponent(planId.trim())}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -86,7 +89,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
 
     return sendJson(res, 200, {
       valid: true,
-      planId: data?.id || planId,
+      planId: data?.id || planId.trim(),
       status: data?.status || null,
       productId: data?.product_id || null,
     });

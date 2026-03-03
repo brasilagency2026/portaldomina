@@ -24,6 +24,8 @@ Ce projet est prêt à être hébergé de manière autonome.
    - `PAYPAL_CLIENT_SECRET`
    - `PAYPAL_ENV` (`sandbox` ou `live`)
    - `PAYPAL_API_BASE` (optionnel, sandbox: `https://api-m.sandbox.paypal.com`, prod: `https://api-m.paypal.com`)
+   - `PAYPAL_PUBLIC_CLIENT_ID` (recommandé)
+   - `PAYPAL_PREMIUM_PLAN_ID` (recommandé)
    - `NEXT_PUBLIC_PAYPAL_CLIENT_ID`
    - `NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID`
    - (optionnel fallback) `VITE_PAYPAL_CLIENT_ID`, `VITE_PAYPAL_PREMIUM_PLAN_ID`
@@ -40,6 +42,7 @@ Le checkout PayPal est intégré sur la page `/premium`.
 
 ### Important
 - Le paiement Premium est en **abonnement mensuel récurrent** via plan PayPal.
+- Si vous voyez `RESOURCE_NOT_FOUND / INVALID_RESOURCE_ID`, vérifiez qu'un seul `PLAN_ID` est utilisé (idéalement `PAYPAL_PREMIUM_PLAN_ID`) et qu'il correspond bien à l'environnement (`sandbox` vs `live`).
 
 ## Technologies
 - React + Vite

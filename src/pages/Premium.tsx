@@ -60,8 +60,16 @@ const Premium = () => {
   const [planValidationMessage, setPlanValidationMessage] = useState<string | null>(null);
   const paypalButtonsRef = useRef<{ close: () => void } | null>(null);
   const containerId = "paypal-premium-button";
-  const paypalClientId = (import.meta.env.VITE_PAYPAL_CLIENT_ID || import.meta.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID) as string | undefined;
-  const premiumPlanId = (import.meta.env.VITE_PAYPAL_PREMIUM_PLAN_ID || import.meta.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID) as string | undefined;
+  const paypalClientId = (
+    import.meta.env.PAYPAL_PUBLIC_CLIENT_ID ||
+    import.meta.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+    import.meta.env.VITE_PAYPAL_CLIENT_ID
+  ) as string | undefined;
+  const premiumPlanId = (
+    import.meta.env.PAYPAL_PREMIUM_PLAN_ID ||
+    import.meta.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID ||
+    import.meta.env.VITE_PAYPAL_PREMIUM_PLAN_ID
+  ) as string | undefined;
 
   useEffect(() => {
     let active = true;
