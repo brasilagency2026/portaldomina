@@ -17,7 +17,7 @@ const Footer = () => {
     ],
     ecossistema: [
       { label: "Loja Online", href: "https://bdsmbrazil.com.br/loja", external: true },
-      { label: "Portal dos Motéis BDSM", href: "https://moteis-bdsm.bdsmbrazil.com.br", external: true },
+      { label: "Portal dos Motéis BDSM", href: "https://moteis.bdsmbrazil.com.br", external: true },
       { label: "Domina Virtual AI", href: "https://dominavirtual.bdsmbrazil.com.br", external: true },
       { label: "Anúncios BDSM", href: "https://anuncios-bdsm.bdsmbrazil.com.br", external: true },
     ],

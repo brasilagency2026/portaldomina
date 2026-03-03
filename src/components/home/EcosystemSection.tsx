@@ -12,7 +12,7 @@ const ecosystem = [
   {
     title: "Portal de Motéis BDSM",
     desc: "Encontre motéis com suítes temáticas BDSM verificadas em todo o país.",
-    link: "https://moteis-bdsm.bdsmbrazil.com.br",
+    link: "https://moteis.bdsmbrazil.com.br",
     icon: Bed,
     color: "text-purple-400",
   },
