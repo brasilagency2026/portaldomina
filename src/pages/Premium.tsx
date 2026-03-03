@@ -75,22 +75,32 @@ const Premium = () => {
     let active = true;
 
     const loadConfig = async () => {
-      if (paypalClientId && premiumPlanId) {
-        setResolvedClientId(paypalClientId);
-        setResolvedPlanId(premiumPlanId);
-        setConfigChecked(true);
-        return;
-      }
-
       try {
         const response = await fetch("/api/paypal/public-config");
         const data = await response.json();
         if (!active) return;
 
-        setResolvedClientId(data?.clientId || null);
-        setResolvedPlanId(data?.premiumPlanId || null);
+        const serverClientId = typeof data?.clientId === "string" ? data.clientId.trim() : "";
+        const serverPlanId = typeof data?.premiumPlanId === "string" ? data.premiumPlanId.trim() : "";
+
+        if (serverClientId && serverPlanId) {
+          setResolvedClientId(serverClientId);
+          setResolvedPlanId(serverPlanId);
+          return;
+        }
+
+        const localClientId = typeof paypalClientId === "string" ? paypalClientId.trim() : "";
+        const localPlanId = typeof premiumPlanId === "string" ? premiumPlanId.trim() : "";
+        setResolvedClientId(localClientId || null);
+        setResolvedPlanId(localPlanId || null);
       } catch (error) {
         console.error("[PayPal] public config load failed", error);
+
+        if (!active) return;
+        const localClientId = typeof paypalClientId === "string" ? paypalClientId.trim() : "";
+        const localPlanId = typeof premiumPlanId === "string" ? premiumPlanId.trim() : "";
+        setResolvedClientId(localClientId || null);
+        setResolvedPlanId(localPlanId || null);
       } finally {
         if (active) {
           setConfigChecked(true);
@@ -195,7 +205,7 @@ const Premium = () => {
       createSubscription: async (_data, actions) => {
         setIsProcessing(true);
         return actions.subscription.create({
-          plan_id: resolvedPlanId,
+          plan_id: resolvedPlanId.trim(),
         });
       },
       onApprove: async (data) => {
