@@ -13,8 +13,8 @@ declare global {
     paypal?: {
       Buttons: (options: {
         style?: { layout?: "vertical" | "horizontal"; shape?: "rect" | "pill"; label?: "paypal" | "checkout" | "pay"; height?: number };
-        createOrder: () => Promise<string>;
-        onApprove: (data: { orderID: string }) => Promise<void>;
+        createSubscription: (_data: unknown, actions: { subscription: { create: (payload: { plan_id: string }) => Promise<string> } }) => Promise<string>;
+        onApprove: (data: { subscriptionID: string }) => Promise<void>;
         onError: (error: unknown) => void;
       }) => { render: (selector: string) => Promise<void>; close: () => void };
     };
@@ -55,7 +55,8 @@ const Premium = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const paypalButtonsRef = useRef<{ close: () => void } | null>(null);
   const containerId = "paypal-premium-button";
-  const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined;
+  const paypalClientId = (import.meta.env.VITE_PAYPAL_CLIENT_ID || import.meta.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID) as string | undefined;
+  const premiumPlanId = (import.meta.env.VITE_PAYPAL_PREMIUM_PLAN_ID || import.meta.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID) as string | undefined;
 
   useEffect(() => {
     if (!paypalClientId) {
@@ -74,7 +75,7 @@ const Premium = () => {
     }
 
     const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(paypalClientId)}&currency=BRL&intent=capture`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(paypalClientId)}&currency=BRL&intent=subscription&vault=true`;
     script.async = true;
     script.dataset.paypalSdk = "true";
     script.onload = () => setSdkReady(true);
@@ -86,7 +87,7 @@ const Premium = () => {
   }, [paypalClientId]);
 
   useEffect(() => {
-    if (!sdkReady || !window.paypal || !session?.access_token || !user) {
+    if (!sdkReady || !window.paypal || !session?.access_token || !user || !premiumPlanId) {
       return;
     }
 
@@ -104,34 +105,20 @@ const Premium = () => {
         label: "paypal",
         height: 48,
       },
-      createOrder: async () => {
+      createSubscription: async (_data, actions) => {
         setIsProcessing(true);
-        const response = await fetch("/api/paypal/create-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ premiumPlan: "monthly" }),
+        return actions.subscription.create({
+          plan_id: premiumPlanId,
         });
-
-        const data = await response.json();
-
-        if (!response.ok || !data?.id) {
-          setIsProcessing(false);
-          throw new Error(data?.error || "Falha ao criar pagamento no PayPal");
-        }
-
-        return data.id as string;
       },
       onApprove: async (data) => {
-        const response = await fetch("/api/paypal/capture-order", {
+        const response = await fetch("/api/paypal/activate-subscription", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({ orderID: data.orderID }),
+          body: JSON.stringify({ subscriptionID: data.subscriptionID }),
         });
 
         const result = await response.json();
@@ -142,7 +129,7 @@ const Premium = () => {
           return;
         }
 
-        toast.success("Pagamento confirmado! Seu perfil Premium foi ativado.");
+        toast.success("Assinatura confirmada! Seu perfil Premium foi ativado.");
       },
       onError: (error) => {
         setIsProcessing(false);
@@ -161,7 +148,7 @@ const Premium = () => {
       paypalButtonsRef.current?.close();
       paypalButtonsRef.current = null;
     };
-  }, [sdkReady, session?.access_token, user]);
+  }, [sdkReady, session?.access_token, user, premiumPlanId]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -194,11 +181,22 @@ const Premium = () => {
                     Entrar para Assinar Premium
                   </Link>
                 </Button>
+              ) : !paypalClientId || !premiumPlanId ? (
+                <div className="max-w-md mx-auto rounded-xl border border-border bg-card/60 p-4">
+                  <p className="text-sm text-muted-foreground">
+                    Pagamento Premium temporariamente indisponível.
+                    Configuração PayPal pendente no ambiente.
+                  </p>
+                </div>
               ) : (
                 <div className="max-w-sm mx-auto space-y-3">
                   <div id={containerId} />
                   <p className="text-sm text-muted-foreground">
-                    {isProcessing ? "Processando pagamento..." : "Pagamento seguro via PayPal"}
+                    {isProcessing
+                      ? "Processando pagamento..."
+                      : !sdkReady
+                        ? "Carregando checkout PayPal..."
+                        : "Pagamento seguro via PayPal"}
                   </p>
                 </div>
               )}
@@ -291,6 +289,11 @@ const Premium = () => {
                     <Crown className="w-5 h-5" />
                     Entrar para Assinar Premium
                   </Link>
+                </Button>
+              ) : !paypalClientId || !premiumPlanId ? (
+                <Button variant="gold" size="xl" className="gap-2" disabled>
+                  <Crown className="w-5 h-5" />
+                  PayPal não configurado
                 </Button>
               ) : (
                 <Button variant="gold" size="xl" className="gap-2" asChild>
