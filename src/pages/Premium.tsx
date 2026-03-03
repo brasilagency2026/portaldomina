@@ -166,7 +166,7 @@ const Premium = () => {
   }, [resolvedClientId]);
 
   useEffect(() => {
-    if (!sdkReady || !window.paypal || !session?.access_token || !user || !resolvedPlanId || !planValidated) {
+    if (!sdkReady || !window.paypal || !session?.access_token || !user || !resolvedPlanId) {
       return;
     }
 
@@ -231,7 +231,7 @@ const Premium = () => {
       paypalButtonsRef.current?.close();
       paypalButtonsRef.current = null;
     };
-  }, [sdkReady, session?.access_token, user, resolvedPlanId, planValidated]);
+  }, [sdkReady, session?.access_token, user, resolvedPlanId]);
 
   const paypalConfigured = Boolean(resolvedClientId && resolvedPlanId);
 
@@ -279,12 +279,6 @@ const Premium = () => {
                     Configuração PayPal pendente no ambiente.
                   </p>
                 </div>
-              ) : !planValidated ? (
-                <div className="max-w-md mx-auto rounded-xl border border-border bg-card/60 p-4">
-                  <p className="text-sm text-muted-foreground">
-                    {planValidationMessage || "Plano PayPal inválido para este ambiente (sandbox/live)."}
-                  </p>
-                </div>
               ) : (
                 <div className="max-w-sm mx-auto space-y-3">
                   <div id={containerId} />
@@ -295,6 +289,11 @@ const Premium = () => {
                         ? "Carregando checkout PayPal..."
                         : "Pagamento seguro via PayPal"}
                   </p>
+                  {!planValidated && planValidationMessage ? (
+                    <p className="text-xs text-amber-400">
+                      {planValidationMessage}
+                    </p>
+                  ) : null}
                 </div>
               )}
             </motion.div>
@@ -387,7 +386,7 @@ const Premium = () => {
                     Entrar para Assinar Premium
                   </Link>
                 </Button>
-              ) : !paypalConfigured || !planValidated ? (
+              ) : !paypalConfigured ? (
                 <Button variant="gold" size="xl" className="gap-2" disabled>
                   <Crown className="w-5 h-5" />
                   PayPal não configurado

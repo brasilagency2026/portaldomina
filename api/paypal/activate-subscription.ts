@@ -16,10 +16,15 @@ function getPayPalBaseUrl() {
   return envMode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
 }
 
+function getPayPalBaseCandidates() {
+  const preferred = getPayPalBaseUrl();
+  const all = ["https://api-m.sandbox.paypal.com", "https://api-m.paypal.com"];
+  return [preferred, ...all.filter((url) => url !== preferred)];
+}
+
 async function getPayPalAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-  const baseUrl = getPayPalBaseUrl();
 
   if (!clientId || !clientSecret) {
     throw new Error("PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET missing");
@@ -27,22 +32,29 @@ async function getPayPalAccessToken() {
 
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
-  const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${auth}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials",
-  });
+  const candidates = getPayPalBaseCandidates();
+  let lastError = "";
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`PayPal oauth failed: ${response.status} ${text}`);
+  for (const baseUrl of candidates) {
+    const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    if (!response.ok) {
+      lastError = await response.text();
+      continue;
+    }
+
+    const data = await response.json();
+    return { accessToken: data.access_token as string, baseUrl };
   }
 
-  const data = await response.json();
-  return { accessToken: data.access_token as string, baseUrl };
+  throw new Error(`PayPal oauth failed on all environments: ${lastError}`);
 }
 
 async function resolveUserIdFromToken(accessToken: string) {
