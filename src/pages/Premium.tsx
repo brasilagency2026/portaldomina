@@ -56,6 +56,8 @@ const Premium = () => {
   const [resolvedClientId, setResolvedClientId] = useState<string | null>(null);
   const [resolvedPlanId, setResolvedPlanId] = useState<string | null>(null);
   const [configChecked, setConfigChecked] = useState(false);
+  const [planValidated, setPlanValidated] = useState(false);
+  const [planValidationMessage, setPlanValidationMessage] = useState<string | null>(null);
   const paypalButtonsRef = useRef<{ close: () => void } | null>(null);
   const containerId = "paypal-premium-button";
   const paypalClientId = (import.meta.env.VITE_PAYPAL_CLIENT_ID || import.meta.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID) as string | undefined;
@@ -96,6 +98,46 @@ const Premium = () => {
   }, [paypalClientId, premiumPlanId]);
 
   useEffect(() => {
+    let active = true;
+
+    const validatePlan = async () => {
+      if (!resolvedClientId || !resolvedPlanId) {
+        if (active) {
+          setPlanValidated(false);
+          setPlanValidationMessage(null);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/paypal/validate-plan");
+        const data = await response.json();
+        if (!active) return;
+
+        if (data?.valid) {
+          setPlanValidated(true);
+          setPlanValidationMessage(null);
+          return;
+        }
+
+        setPlanValidated(false);
+        setPlanValidationMessage(data?.message || "Plano PayPal inválido ou indisponível");
+      } catch (error) {
+        if (!active) return;
+        setPlanValidated(false);
+        setPlanValidationMessage("Não foi possível validar o plano PayPal");
+        console.error("[PayPal] plan validation failed", error);
+      }
+    };
+
+    validatePlan();
+
+    return () => {
+      active = false;
+    };
+  }, [resolvedClientId, resolvedPlanId]);
+
+  useEffect(() => {
     if (!resolvedClientId) {
       return;
     }
@@ -124,7 +166,7 @@ const Premium = () => {
   }, [resolvedClientId]);
 
   useEffect(() => {
-    if (!sdkReady || !window.paypal || !session?.access_token || !user || !resolvedPlanId) {
+    if (!sdkReady || !window.paypal || !session?.access_token || !user || !resolvedPlanId || !planValidated) {
       return;
     }
 
@@ -171,7 +213,11 @@ const Premium = () => {
       onError: (error) => {
         setIsProcessing(false);
         console.error("[PayPal] error:", error);
-        toast.error("Erro no processamento do PayPal.");
+        const message =
+          typeof error === "object" && error && "message" in error
+            ? String((error as { message?: string }).message)
+            : "Erro no processamento do PayPal";
+        toast.error(`Erro no processamento PayPal: ${message}`);
       },
     });
 
@@ -185,7 +231,7 @@ const Premium = () => {
       paypalButtonsRef.current?.close();
       paypalButtonsRef.current = null;
     };
-  }, [sdkReady, session?.access_token, user, resolvedPlanId]);
+  }, [sdkReady, session?.access_token, user, resolvedPlanId, planValidated]);
 
   const paypalConfigured = Boolean(resolvedClientId && resolvedPlanId);
 
@@ -231,6 +277,12 @@ const Premium = () => {
                   <p className="text-sm text-muted-foreground">
                     Pagamento Premium temporariamente indisponível.
                     Configuração PayPal pendente no ambiente.
+                  </p>
+                </div>
+              ) : !planValidated ? (
+                <div className="max-w-md mx-auto rounded-xl border border-border bg-card/60 p-4">
+                  <p className="text-sm text-muted-foreground">
+                    {planValidationMessage || "Plano PayPal inválido para este ambiente (sandbox/live)."}
                   </p>
                 </div>
               ) : (
@@ -335,7 +387,7 @@ const Premium = () => {
                     Entrar para Assinar Premium
                   </Link>
                 </Button>
-              ) : !paypalConfigured ? (
+              ) : !paypalConfigured || !planValidated ? (
                 <Button variant="gold" size="xl" className="gap-2" disabled>
                   <Crown className="w-5 h-5" />
                   PayPal não configurado
