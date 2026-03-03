@@ -53,13 +53,50 @@ const Premium = () => {
   const { session, user } = useSession();
   const [sdkReady, setSdkReady] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [resolvedClientId, setResolvedClientId] = useState<string | null>(null);
+  const [resolvedPlanId, setResolvedPlanId] = useState<string | null>(null);
+  const [configChecked, setConfigChecked] = useState(false);
   const paypalButtonsRef = useRef<{ close: () => void } | null>(null);
   const containerId = "paypal-premium-button";
   const paypalClientId = (import.meta.env.VITE_PAYPAL_CLIENT_ID || import.meta.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID) as string | undefined;
   const premiumPlanId = (import.meta.env.VITE_PAYPAL_PREMIUM_PLAN_ID || import.meta.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID) as string | undefined;
 
   useEffect(() => {
-    if (!paypalClientId) {
+    let active = true;
+
+    const loadConfig = async () => {
+      if (paypalClientId && premiumPlanId) {
+        setResolvedClientId(paypalClientId);
+        setResolvedPlanId(premiumPlanId);
+        setConfigChecked(true);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/paypal/public-config");
+        const data = await response.json();
+        if (!active) return;
+
+        setResolvedClientId(data?.clientId || null);
+        setResolvedPlanId(data?.premiumPlanId || null);
+      } catch (error) {
+        console.error("[PayPal] public config load failed", error);
+      } finally {
+        if (active) {
+          setConfigChecked(true);
+        }
+      }
+    };
+
+    loadConfig();
+
+    return () => {
+      active = false;
+    };
+  }, [paypalClientId, premiumPlanId]);
+
+  useEffect(() => {
+    if (!resolvedClientId) {
       return;
     }
 
@@ -75,7 +112,7 @@ const Premium = () => {
     }
 
     const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(paypalClientId)}&currency=BRL&intent=subscription&vault=true`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(resolvedClientId)}&currency=BRL&intent=subscription&vault=true`;
     script.async = true;
     script.dataset.paypalSdk = "true";
     script.onload = () => setSdkReady(true);
@@ -84,10 +121,10 @@ const Premium = () => {
     };
 
     document.body.appendChild(script);
-  }, [paypalClientId]);
+  }, [resolvedClientId]);
 
   useEffect(() => {
-    if (!sdkReady || !window.paypal || !session?.access_token || !user || !premiumPlanId) {
+    if (!sdkReady || !window.paypal || !session?.access_token || !user || !resolvedPlanId) {
       return;
     }
 
@@ -108,7 +145,7 @@ const Premium = () => {
       createSubscription: async (_data, actions) => {
         setIsProcessing(true);
         return actions.subscription.create({
-          plan_id: premiumPlanId,
+          plan_id: resolvedPlanId,
         });
       },
       onApprove: async (data) => {
@@ -148,7 +185,9 @@ const Premium = () => {
       paypalButtonsRef.current?.close();
       paypalButtonsRef.current = null;
     };
-  }, [sdkReady, session?.access_token, user, premiumPlanId]);
+  }, [sdkReady, session?.access_token, user, resolvedPlanId]);
+
+  const paypalConfigured = Boolean(resolvedClientId && resolvedPlanId);
 
   return (
     <div className="min-h-screen bg-background">
@@ -181,7 +220,13 @@ const Premium = () => {
                     Entrar para Assinar Premium
                   </Link>
                 </Button>
-              ) : !paypalClientId || !premiumPlanId ? (
+              ) : !configChecked ? (
+                <div className="max-w-md mx-auto rounded-xl border border-border bg-card/60 p-4">
+                  <p className="text-sm text-muted-foreground">
+                    Verificando configuração do PayPal...
+                  </p>
+                </div>
+              ) : !paypalConfigured ? (
                 <div className="max-w-md mx-auto rounded-xl border border-border bg-card/60 p-4">
                   <p className="text-sm text-muted-foreground">
                     Pagamento Premium temporariamente indisponível.
@@ -290,7 +335,7 @@ const Premium = () => {
                     Entrar para Assinar Premium
                   </Link>
                 </Button>
-              ) : !paypalClientId || !premiumPlanId ? (
+              ) : !paypalConfigured ? (
                 <Button variant="gold" size="xl" className="gap-2" disabled>
                   <Crown className="w-5 h-5" />
                   PayPal não configurado
