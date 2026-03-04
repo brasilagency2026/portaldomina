@@ -7,9 +7,9 @@ function sendJson(res: VercelResponse, status: number, payload: unknown) {
 
 function getPayPalBaseUrl() {
   if (process.env.PAYPAL_API_BASE) {
-    return process.env.PAYPAL_API_BASE;
+    return process.env.PAYPAL_API_BASE.trim();
   }
-  const envMode = (process.env.PAYPAL_ENV || "sandbox").toLowerCase();
+  const envMode = (process.env.PAYPAL_ENV || "sandbox").trim().toLowerCase();
   return envMode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
 }
 
@@ -56,15 +56,28 @@ async function getPayPalAccessToken() {
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
-    const planId =
-      process.env.PAYPAL_PREMIUM_PLAN_ID ||
-      process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID ||
-      process.env.VITE_PAYPAL_PREMIUM_PLAN_ID;
+    const planFromCanonical = process.env.PAYPAL_PREMIUM_PLAN_ID?.trim();
+    const planFromNext = process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID?.trim();
+    const planFromVite = process.env.VITE_PAYPAL_PREMIUM_PLAN_ID?.trim();
+
+    const planId = planFromCanonical || planFromNext || planFromVite;
+    const planSource = planFromCanonical
+      ? "PAYPAL_PREMIUM_PLAN_ID"
+      : planFromNext
+        ? "NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID"
+        : planFromVite
+          ? "VITE_PAYPAL_PREMIUM_PLAN_ID"
+          : "none";
 
     if (!planId?.trim()) {
       return sendJson(res, 200, {
         valid: false,
         message: "PAYPAL plan id ausente no ambiente",
+        diagnostics: {
+          planSource,
+          paypalEnv: (process.env.PAYPAL_ENV || "sandbox").trim().toLowerCase(),
+          baseUrl: getPayPalBaseUrl(),
+        },
       });
     }
 
@@ -84,6 +97,12 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
       return sendJson(res, 200, {
         valid: false,
         message: data?.message || "Plano PayPal inválido para este ambiente (sandbox/live)",
+        diagnostics: {
+          planId: planId.trim(),
+          planSource,
+          paypalEnv: (process.env.PAYPAL_ENV || "sandbox").trim().toLowerCase(),
+          baseUrl,
+        },
       });
     }
 
@@ -92,12 +111,21 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
       planId: data?.id || planId.trim(),
       status: data?.status || null,
       productId: data?.product_id || null,
+      diagnostics: {
+        planSource,
+        paypalEnv: (process.env.PAYPAL_ENV || "sandbox").trim().toLowerCase(),
+        baseUrl,
+      },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal server error";
     return sendJson(res, 200, {
       valid: false,
       message,
+      diagnostics: {
+        paypalEnv: (process.env.PAYPAL_ENV || "sandbox").trim().toLowerCase(),
+        baseUrl: getPayPalBaseUrl(),
+      },
     });
   }
 }
