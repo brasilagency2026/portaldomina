@@ -13,7 +13,8 @@ interface PhotosTabProps {
 }
 
 const PhotosTab = ({ perfil, uploading, handleFileUpload, removePhoto }: PhotosTabProps) => {
-  const limit = perfil.is_premium ? 20 : 5;
+  // Limite : 1 photo pour gratuit, 10 pour premium
+  const limit = perfil.is_premium ? 10 : 1;
   const fotos = perfil.fotos || [];
 
   return (

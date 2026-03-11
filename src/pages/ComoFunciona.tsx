@@ -83,7 +83,7 @@ const filterFeatures = [
     icon: Crown,
     title: "Filtro Premium",
     description:
-      "Ative o botão \"Premium\" para ver apenas perfis com assinatura ativa — os mais completos, com mais fotos, vídeos e informações detalhadas.",
+      "Ative o botão \"Premium\" para ver apenas perfis com assinatura ativa — os mais completos, com mais fotos e informações detalhadas (sem vídeos).",
   },
   {
     icon: Map,
@@ -97,7 +97,7 @@ const premiumBenefits = [
   { icon: Star, text: "Aparecem primeiro nos resultados de busca" },
   { icon: MapPin, text: "Destaque no mapa interativo com marcador dourado" },
   { icon: Crown, text: "Badge Premium visível no perfil e nas listagens" },
-  { icon: Eye, text: "Galeria com até 20 fotos profissionais" },
+  { icon: Eye, text: "Galeria com até 10 fotos profissionais" },
   { icon: Zap, text: "Estatísticas de visualizações em tempo real" },
   { icon: Shield, text: "Verificação prioritária pela equipe BDSMBRAZIL" },
 ];
@@ -140,7 +140,7 @@ const faqs = [
   },
   {
     q: "O que diferencia um perfil Premium?",
-    a: "Perfis Premium aparecem primeiro nas buscas, têm mais fotos, vídeos, endereço completo com Google Maps e um badge dourado de destaque.",
+    a: "Perfis Premium aparecem primeiro nas buscas, têm até 10 fotos, endereço completo com Google Maps e um badge dourado de destaque. (Sem vídeos)",
   },
 ];
 

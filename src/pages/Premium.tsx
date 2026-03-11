@@ -24,9 +24,8 @@ declare global {
 const premiumFeatures = [
   { icon: MapPin, title: "Destaque no Mapa", desc: "Apareça em destaque no mapa interativo num raio de 20km da sua localização." },
   { icon: Zap, title: "Prioridade nas Buscas", desc: "Seu perfil aparece sempre no topo dos résultats de busca." },
-  { icon: Image, title: "Galeria de 20 Fotos", desc: "Publique até 20 fotos no seu perfil profissional." },
-  { icon: Video, title: "Até 2 Vídeos", desc: "Adicione até 2 vídeos de 2 minutos cada para mostrar seu trabalho." },
-  { icon: BarChart3, title: "Estatísticas", desc: "Acompanhe visualizações, cliques e interações com seu perfil." },
+  { icon: Image, title: "Galeria de até 10 Fotos", desc: "Publique até 10 fotos no seu perfil profissional." },
+  { icon: BarChart3, title: "Estatísticas", desc: "Acompanhe visualizações, cliques e interações com seu profil." },
   { icon: Bell, title: "Notificações", desc: "Receba alertas em tempo real quando alguém visualizar seu perfil." },
   { icon: Eye, title: "Endereço Completo", desc: "Exiba seu endereço completo com integração Google Maps." },
   { icon: Crown, title: "Badge Verificado", desc: "Selo Premium exclusivo que transmite confiança e profissionalismo." },
@@ -34,13 +33,11 @@ const premiumFeatures = [
 
 const comparison = [
   { feature: "Perfil básico", free: true, premium: true },
-  { feature: "Até 5 fotos", free: true, premium: false, premiumLabel: "Até 20 fotos" },
+  { feature: "1 foto", free: true, premium: false, premiumLabel: "Até 10 fotos" },
   { feature: "Bio de até 500 caracteres", free: true, premium: true },
   { feature: "Botão WhatsApp", free: true, premium: true },
   { feature: "Botão Waze", free: true, premium: true },
   { feature: "Carteiras de pagamento", free: true, premium: true },
-  { feature: "Galeria de 20 fotos", free: false, premium: true },
-  { feature: "Até 2 vidéos", free: false, premium: true },
   { feature: "Destaque no mapa (20km)", free: false, premium: true },
   { feature: "Prioridade nas buscas", free: false, premium: true },
   { feature: "Endereço completo + Maps", free: false, premium: true },

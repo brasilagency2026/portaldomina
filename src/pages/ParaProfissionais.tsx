@@ -11,8 +11,7 @@ import { Link } from "react-router-dom";
 const premiumFeatures = [
   { icon: MapPin, title: "Destaque no Mapa", desc: "Apareça em destaque no mapa interativo num raio de 20km da sua localização." },
   { icon: Zap, title: "Prioridade nas Buscas", desc: "Seu perfil aparece sempre no topo dos resultados de busca." },
-  { icon: Image, title: "Galeria de 20 Fotos", desc: "Publique até 20 fotos no seu perfil profissional." },
-  { icon: Video, title: "Até 2 Vídeos", desc: "Adicione vídeos para mostrar seu trabalho e ambiente." },
+  { icon: Image, title: "Galeria de até 10 Fotos", desc: "Publique até 10 fotos no seu perfil profissional." },
   { icon: BarChart3, title: "Estatísticas", desc: "Acompanhe visualizações, cliques e interações com seu perfil." },
   { icon: Bell, title: "Notificações", desc: "Receba alertas em tempo real quando alguém visualizar seu perfil." },
   { icon: ShieldCheck, title: "Selo Verificado", desc: "Badge Premium exclusivo que transmite confiança e profissionalismo." },
@@ -97,7 +96,7 @@ const ParaProfissionais = () => {
                 <ul className="space-y-3">
                   {[
                     "Perfil profissional completo",
-                    "Até 5 fotos na galeria",
+                    "1 foto na galeria",
                     "Bio de até 500 caracteres",
                     "Localização aproximada",
                     "Botão direto para WhatsApp",

@@ -116,7 +116,8 @@ export default function Dashboard() {
       setUploading(true);
       if (!event.target.files || event.target.files.length === 0) return;
       
-      const limit = perfil.is_premium ? 20 : 5;
+      // Limite : 1 photo pour gratuit, 10 pour premium
+      const limit = perfil.is_premium ? 10 : 1;
       if ((perfil.fotos || []).length >= limit) {
         toast.error(`Limite de ${limit} fotos atingido.`);
         return;
