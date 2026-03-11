@@ -6,12 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
 import { useSession } from "@/components/auth/SessionProvider";
-import { User as UserIcon, Image as ImageIcon, Lock, Loader2, BarChart3 } from "lucide-react";
+import { User as UserIcon, Image as ImageIcon, Lock, Loader2 } from "lucide-react";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ProfileTab from "@/components/dashboard/ProfileTab";
 import PhotosTab from "@/components/dashboard/PhotosTab";
 import SecurityTab from "@/components/dashboard/SecurityTab";
-import StatsTab from "@/components/dashboard/StatsTab";
+// ...existing code...
 
 export default function Dashboard() {
   const { user, loading: sessionLoading } = useSession();
@@ -190,7 +190,7 @@ export default function Dashboard() {
           <TabsList className="bg-card border border-border overflow-x-auto flex-nowrap justify-start md:justify-center">
             <TabsTrigger value="perfil" className="gap-2 shrink-0"><UserIcon className="w-4 h-4" /> Perfil</TabsTrigger>
             <TabsTrigger value="fotos" className="gap-2 shrink-0"><ImageIcon className="w-4 h-4" /> Galeria</TabsTrigger>
-            <TabsTrigger value="stats" className="gap-2 shrink-0"><BarChart3 className="w-4 h-4" /> Estatísticas</TabsTrigger>
+            {/* Onglet statistiques supprimé */}
             <TabsTrigger value="seguranca" className="gap-2 shrink-0"><Lock className="w-4 h-4" /> Segurança</TabsTrigger>
           </TabsList>
 
@@ -212,9 +212,7 @@ export default function Dashboard() {
             />
           </TabsContent>
 
-          <TabsContent value="stats">
-            <StatsTab isPremium={perfil?.is_premium} />
-          </TabsContent>
+          {/* Contenu statistiques supprimé */}
 
           <TabsContent value="seguranca">
             <SecurityTab perfil={perfil} setPerfil={setPerfil} />

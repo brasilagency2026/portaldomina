@@ -12,7 +12,7 @@ const premiumFeatures = [
   { icon: MapPin, title: "Destaque no Mapa", desc: "Apareça em destaque no mapa interativo num raio de 20km da sua localização." },
   { icon: Zap, title: "Prioridade nas Buscas", desc: "Seu perfil aparece sempre no topo dos resultados de busca." },
   { icon: Image, title: "Galeria de até 10 Fotos", desc: "Publique até 10 fotos no seu perfil profissional." },
-  { icon: BarChart3, title: "Estatísticas", desc: "Acompanhe visualizações, cliques e interações com seu perfil." },
+  // ...statistiques supprimées...
   { icon: Bell, title: "Notificações", desc: "Receba alertas em tempo real quando alguém visualizar seu perfil." },
   { icon: ShieldCheck, title: "Selo Verificado", desc: "Badge Premium exclusivo que transmite confiança e profissionalismo." },
   { icon: Crown, title: "Suporte Prioritário", desc: "Atendimento exclusivo para profissionais Premium." },

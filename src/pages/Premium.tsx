@@ -25,7 +25,7 @@ const premiumFeatures = [
   { icon: MapPin, title: "Destaque no Mapa", desc: "Apareça em destaque no mapa interativo num raio de 20km da sua localização." },
   { icon: Zap, title: "Prioridade nas Buscas", desc: "Seu perfil aparece sempre no topo dos résultats de busca." },
   { icon: Image, title: "Galeria de até 10 Fotos", desc: "Publique até 10 fotos no seu perfil profissional." },
-  { icon: BarChart3, title: "Estatísticas", desc: "Acompanhe visualizações, cliques e interações com seu profil." },
+  // ...statistiques supprimées...
   { icon: Bell, title: "Notificações", desc: "Receba alertas em tempo real quando alguém visualizar seu perfil." },
   { icon: Eye, title: "Endereço Completo", desc: "Exiba seu endereço completo com integração Google Maps." },
   { icon: Crown, title: "Badge Verificado", desc: "Selo Premium exclusivo que transmite confiança e profissionalismo." },
@@ -42,7 +42,7 @@ const comparison = [
   { feature: "Prioridade nas buscas", free: false, premium: true },
   { feature: "Endereço completo + Maps", free: false, premium: true },
   { feature: "Badge Premium", free: false, premium: true },
-  { feature: "Estatísticas", free: false, premium: true },
+  // ...statistiques supprimées...
   { feature: "Notificações", free: false, premium: true },
 ];
 

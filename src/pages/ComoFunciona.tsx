@@ -98,7 +98,7 @@ const premiumBenefits = [
   { icon: MapPin, text: "Destaque no mapa interativo com marcador dourado" },
   { icon: Crown, text: "Badge Premium visível no perfil e nas listagens" },
   { icon: Eye, text: "Galeria com até 10 fotos profissionais" },
-  { icon: Zap, text: "Estatísticas de visualizações em tempo real" },
+  // ...statistiques supprimées...
   { icon: Shield, text: "Verificação prioritária pela equipe BDSMBRAZIL" },
 ];
 
