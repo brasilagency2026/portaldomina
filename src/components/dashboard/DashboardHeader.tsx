@@ -15,7 +15,7 @@ const DashboardHeader = ({ role, isPremium }: DashboardHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
       <h1 className="text-3xl font-bold text-gradient-gold">Painel de Controle</h1>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 items-center">
         {role === 'admin' && (
           <Button variant="outline" className="gap-2 border-primary/50 text-primary" asChild>
             <Link to="/admin">
@@ -24,10 +24,21 @@ const DashboardHeader = ({ role, isPremium }: DashboardHeaderProps) => {
             </Link>
           </Button>
         )}
-        {isPremium && (
+        {isPremium ? (
           <Badge className="bg-gradient-gold gap-1.5 py-1.5 px-4">
-            <Crown className="w-4 h-4" /> Assinatura Premium Ativa
+            <Crown className="w-4 h-4" /> Plano Premium
           </Badge>
+        ) : (
+          <>
+            <Badge variant="outline" className="gap-1.5 py-1.5 px-4">
+              Plano Grátis
+            </Badge>
+            <Button variant="gold" size="sm" className="gap-2 ml-2" asChild>
+              <Link to="/premium">
+                <Crown className="w-4 h-4" /> Upgrade para Premium
+              </Link>
+            </Button>
+          </>
         )}
       </div>
     </div>
