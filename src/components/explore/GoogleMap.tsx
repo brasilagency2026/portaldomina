@@ -1,5 +1,6 @@
 /// <reference types="google.maps" />
 import { useEffect, useRef, useState } from "react";
+import { Loader } from "@googlemaps/js-api-loader";
 
 interface MapMarker {
   id: number | string;
@@ -22,47 +23,65 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const loadGoogleMaps = () => {
-      // Vérifier si Google Maps est déjà chargé
-      if ((window as any).google?.maps) {
-        setIsLoaded(true);
-        return;
-      }
-
-      // Vérifier si le script est déjà en cours de chargement
-      const existingScript = document.querySelector('script[data-google-maps]');
-      if (existingScript) {
-        existingScript.addEventListener('load', () => setIsLoaded(true));
-        return;
-      }
-
+    const loadGoogleMaps = async () => {
       // Obtenir la clé API depuis les variables d'environnement
       const apiKey = import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
                      import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+      console.log('API Key check:', {
+        NEXT_PUBLIC: import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 'defined' : 'undefined',
+        VITE: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? 'defined' : 'undefined',
+        selected: apiKey ? 'found' : 'not found'
+      });
 
       if (!apiKey) {
         console.error('Google Maps API key not found. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY or VITE_GOOGLE_MAPS_API_KEY');
         return;
       }
 
-      // Créer et charger le script Google Maps
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
-      script.async = true;
-      script.defer = true;
-      script.setAttribute('data-google-maps', 'true');
-      script.onload = () => setIsLoaded(true);
-      script.onerror = () => console.error('Failed to load Google Maps script');
+      try {
+        const loader = new Loader({
+          apiKey,
+          libraries: ["places", "marker"],
+        });
 
-      document.head.appendChild(script);
+        console.log('Loading Google Maps via Loader...');
+        await loader.load();
+        console.log('Google Maps loaded via Loader, window.google:', (window as any).google);
+
+        if ((window as any).google?.maps) {
+          setIsLoaded(true);
+        } else {
+          console.error('Google Maps loaded but api object is not available', (window as any).google);
+        }
+      } catch (error) {
+        console.error('Failed to load Google Maps via Loader', error);
+      }
     };
 
     loadGoogleMaps();
   }, []);
 
   useEffect(() => {
+    console.log('Map creation effect triggered, isLoaded:', isLoaded, 'mapRef.current:', !!mapRef.current);
     if (!isLoaded || !mapRef.current) return;
 
+    // Vérifier que google.maps est disponible
+    if (!(window as any).google?.maps) {
+      console.error('Google Maps API not available in map creation effect');
+      return;
+    }
+
+    console.log('google object', (window as any).google);
+    console.log('google.maps', (window as any).google?.maps);
+    console.log('google.maps.Map type', typeof (window as any).google?.maps?.Map, (window as any).google?.maps?.Map);
+
+    if (typeof (window as any).google?.maps?.Map !== 'function') {
+      console.error('google.maps.Map is not a constructor - incompatible Google Maps object', (window as any).google?.maps?.Map);
+      return;
+    }
+
+    console.log('Creating Google Map...');
     const map = new google.maps.Map(mapRef.current, {
       center: { lat: -23.5505, lng: -46.6333 },
       zoom: 12,
@@ -91,6 +110,12 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
 
   useEffect(() => {
     if (!mapInstanceRef.current || !isLoaded) return;
+
+    // Vérifier que google.maps est disponible
+    if (!(window as any).google?.maps) {
+      console.error('Google Maps API not available');
+      return;
+    }
 
     markersRef.current.forEach((m) => m.map = null);
     markersRef.current = [];
