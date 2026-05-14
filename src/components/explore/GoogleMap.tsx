@@ -18,7 +18,7 @@ interface GoogleMapProps {
 const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
+  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
     mapInstanceRef.current = map;
 
     return () => {
-      markersRef.current.forEach((m) => m.setMap(null));
+      markersRef.current.forEach((m) => m.map = null);
       markersRef.current = [];
     };
   }, [isLoaded]);
@@ -64,7 +64,7 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   useEffect(() => {
     if (!mapInstanceRef.current || !isLoaded) return;
 
-    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.forEach((m) => m.map = null);
     markersRef.current = [];
 
     const bounds = new google.maps.LatLngBounds();
@@ -72,18 +72,21 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
     markers.forEach((m) => {
       const profileUrl = `/profile/${m.slug || m.id}`;
 
-      const marker = new google.maps.Marker({
+      // Créer un élément DOM pour le marker personnalisé
+      const markerElement = document.createElement('div');
+      markerElement.style.width = m.isPremium ? '20px' : '14px';
+      markerElement.style.height = m.isPremium ? '20px' : '14px';
+      markerElement.style.borderRadius = '50%';
+      markerElement.style.backgroundColor = m.isPremium ? '#D4AF37' : '#a855f7';
+      markerElement.style.border = `2px solid ${m.isPremium ? '#FFD700' : '#7c3aed'}`;
+      markerElement.style.cursor = 'pointer';
+      markerElement.style.opacity = '0.9';
+
+      const marker = new google.maps.marker.AdvancedMarkerElement({
         position: { lat: m.lat, lng: m.lng },
         map: mapInstanceRef.current!,
         title: m.name,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: m.isPremium ? 10 : 7,
-          fillColor: m.isPremium ? "#D4AF37" : "#a855f7",
-          fillOpacity: 0.9,
-          strokeColor: m.isPremium ? "#FFD700" : "#7c3aed",
-          strokeWeight: 2,
-        },
+        content: markerElement,
       });
 
       const infoWindow = new google.maps.InfoWindow({
