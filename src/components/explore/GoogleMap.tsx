@@ -1,6 +1,6 @@
 /// <reference types="google.maps" />
 import { useEffect, useRef, useState } from "react";
-import { Loader } from "@googlemaps/js-api-loader";
+import { importLibrary, setOptions } from "@googlemaps/js-api-loader";
 
 interface MapMarker {
   id: number | string;
@@ -43,14 +43,14 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       }
 
       try {
-        const loader = new Loader({
+        setOptions({
           apiKey,
           libraries: ["places", "marker"],
         });
 
-        console.log('Loading Google Maps via Loader...');
-        await loader.load();
-        console.log('Google Maps loaded via Loader, window.google:', (window as any).google);
+        console.log('Loading Google Maps via importLibrary...');
+        await importLibrary("maps");
+        console.log('Google Maps loaded via importLibrary, window.google:', (window as any).google);
 
         if ((window as any).google?.maps) {
           setIsLoaded(true);
@@ -60,7 +60,7 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
           setError(message);
         }
       } catch (loadError) {
-        const message = 'Failed to load Google Maps via Loader.';
+        const message = 'Failed to load Google Maps via importLibrary.';
         console.error(message, loadError);
         setError(`${message} ${loadError}`);
       }
