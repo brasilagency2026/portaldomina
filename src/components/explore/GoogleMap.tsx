@@ -21,6 +21,7 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadGoogleMaps = async () => {
@@ -35,7 +36,9 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       });
 
       if (!apiKey) {
-        console.error('Google Maps API key not found. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY or VITE_GOOGLE_MAPS_API_KEY');
+        const message = 'Google Maps API key not found. Please set VITE_GOOGLE_MAPS_API_KEY in Vercel.';
+        console.error(message);
+        setError(message);
         return;
       }
 
@@ -52,10 +55,14 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
         if ((window as any).google?.maps) {
           setIsLoaded(true);
         } else {
-          console.error('Google Maps loaded but api object is not available', (window as any).google);
+          const message = 'Google Maps loaded but api object is not available.';
+          console.error(message, (window as any).google);
+          setError(message);
         }
-      } catch (error) {
-        console.error('Failed to load Google Maps via Loader', error);
+      } catch (loadError) {
+        const message = 'Failed to load Google Maps via Loader.';
+        console.error(message, loadError);
+        setError(`${message} ${loadError}`);
       }
     };
 
@@ -77,7 +84,9 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
     console.log('google.maps.Map type', typeof (window as any).google?.maps?.Map, (window as any).google?.maps?.Map);
 
     if (typeof (window as any).google?.maps?.Map !== 'function') {
-      console.error('google.maps.Map is not a constructor - incompatible Google Maps object', (window as any).google?.maps?.Map);
+      const message = 'google.maps.Map is not a constructor - incompatible Google Maps object.';
+      console.error(message, (window as any).google?.maps?.Map);
+      setError(message);
       return;
     }
 
@@ -175,6 +184,15 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       }
     }
   }, [markers, isLoaded, onMarkerClick]);
+
+  if (error) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-secondary rounded-2xl p-4 text-center">
+        <p className="text-red-400 font-semibold mb-2">Erro ao carregar o mapa</p>
+        <p className="text-muted-foreground text-sm">{error}</p>
+      </div>
+    );
+  }
 
   if (!isLoaded) {
     return (
