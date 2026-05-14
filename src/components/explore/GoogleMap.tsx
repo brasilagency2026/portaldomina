@@ -20,6 +20,7 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
+  const advancedMarkerClassRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,15 +45,17 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
 
       try {
         setOptions({
-          apiKey,
+          key: apiKey,
           libraries: ["places", "marker"],
         });
 
         console.log('Loading Google Maps via importLibrary...');
         await importLibrary("maps");
+        await importLibrary("marker");
         console.log('Google Maps loaded via importLibrary, window.google:', (window as any).google);
 
         if ((window as any).google?.maps) {
+          advancedMarkerClassRef.current = (window as any).google?.maps?.marker?.AdvancedMarkerElement;
           setIsLoaded(true);
         } else {
           const message = 'Google Maps loaded but api object is not available.';
@@ -144,12 +147,19 @@ const GoogleMap = ({ markers, onMarkerClick }: GoogleMapProps) => {
       markerElement.style.cursor = 'pointer';
       markerElement.style.opacity = '0.9';
 
-      const marker = new google.maps.marker.AdvancedMarkerElement({
-        position: { lat: m.lat, lng: m.lng },
-        map: mapInstanceRef.current!,
-        title: m.name,
-        content: markerElement,
-      });
+      const AdvancedMarkerElement = advancedMarkerClassRef.current;
+      const marker = AdvancedMarkerElement
+        ? new AdvancedMarkerElement({
+            position: { lat: m.lat, lng: m.lng },
+            map: mapInstanceRef.current!,
+            title: m.name,
+            content: markerElement,
+          })
+        : new google.maps.Marker({
+            position: { lat: m.lat, lng: m.lng },
+            map: mapInstanceRef.current!,
+            title: m.name,
+          });
 
       const infoWindow = new google.maps.InfoWindow({
         content: `
