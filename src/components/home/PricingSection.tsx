@@ -24,7 +24,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "R$ 49,90",
+    price: "R$ 100",
     period: "/mês",
     description: "Máxima visibilidade",
     features: [

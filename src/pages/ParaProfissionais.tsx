@@ -144,7 +144,7 @@ const ParaProfissionais = () => {
               <div className="inline-block p-8 rounded-3xl glass-dark border border-primary/30">
                 <p className="text-sm text-muted-foreground mb-2 uppercase tracking-wider">Investimento Premium</p>
                 <div className="flex items-baseline justify-center gap-2 mb-6">
-                  <span className="text-5xl font-bold text-gradient-gold">R$ 49,90</span>
+                  <span className="text-5xl font-bold text-gradient-gold">R$ 100</span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <Button variant="gold" size="lg" asChild className="w-full">

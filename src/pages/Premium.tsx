@@ -271,7 +271,7 @@ const Premium = () => {
                 Destaque-se da concorrência com recursos exclusivos que aumentam suas visualizações e clientes.
               </p>
               <div className="flex items-baseline justify-center gap-2 mb-8">
-                <span className="text-5xl md:text-6xl font-bold text-gradient-gold">R$ 49,90</span>
+                <span className="text-5xl md:text-6xl font-bold text-gradient-gold">R$ 100</span>
                 <span className="text-xl text-muted-foreground">/mês</span>
               </div>
               {!user ? (
@@ -410,7 +410,7 @@ const Premium = () => {
                 <Button variant="gold" size="xl" className="gap-2" asChild>
                   <a href={`#${containerId}`}>
                     <Crown className="w-5 h-5" />
-                    Assinar Premium — R$ 49,90/mês
+                    Assinar Premium — R$ 100/mês
                   </a>
                 </Button>
               )}
