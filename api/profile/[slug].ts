@@ -58,7 +58,7 @@ function getProfileMeta(profile: any, identifier: string) {
     ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
     : "Profissional verificada no maior portal BDSM do Brasil.";
 
-  let image = `${SITE_URL}/og-default.jpg`;
+  let image = `${SITE_URL}/banner.png`;
   if (Array.isArray(profile?.fotos) && profile.fotos.length > 0) {
     const validFoto = profile.fotos.find((f: string) => f && f.startsWith('http'));
     if (validFoto) image = validFoto;

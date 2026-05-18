@@ -68,7 +68,7 @@ const Profile = () => {
   };
 
   const profileSlug = profile?.slug || profile?.id;
-  const ogImage = profile?.fotos?.[0] || profile?.foto_url || "https://bmivfqpopjgozwjoustr.supabase.co/storage/v1/object/public/profiles/og-default.jpg";
+  const ogImage = profile?.fotos?.[0] || profile?.foto_url || "https://dominas.bdsmbrazil.com.br/banner.png";
   const ogTitle = profile ? `${profile.nome} | BDSMBRAZIL` : "BDSMBRAZIL";
   const ogDescription = profile?.bio
     ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
