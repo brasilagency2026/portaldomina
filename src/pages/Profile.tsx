@@ -59,7 +59,8 @@ const Profile = () => {
   const getWhatsAppUrl = () => {
     if (!profile?.telefone) return null;
     const digits = profile.telefone.replace(/\D/g, "");
-    return `https://wa.me/55${digits}`;
+    const message = `Olá ${profile.nome}, vi seu perfil no BDSMBrazil!`;
+    return `https://wa.me/55${digits}?text=${encodeURIComponent(message)}`;
   };
 
   const getWazeUrl = () => {
