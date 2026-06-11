@@ -1,0 +1,21 @@
+# BDSMBRAZIL
+
+## Introduction
+BDSMBRAZIL is the premier BDSM portal in Brazil. It is a directory and platform dedicated to connecting users with verified professionals and providing a safe, consensual environment.
+
+## Overview
+This platform allows users to browse verified professional profiles, find information about the community, and manage their own profiles securely.
+
+## Main Sections
+- / : Homepage with the latest updates and featured profiles.
+- /explorar : Directory to explore and find professionals by location or specialty.
+- /perfis : Comprehensive list of professional profiles.
+- /premium : Premium features and subscription plans for enhanced visibility.
+- /sobre : Information about the platform, its mission, and its values.
+- /contato : Contact page for support and inquiries.
+- /faq : Frequently Asked Questions about the platform and its services.
+- /como-funciona : Guide on how the platform works.
+- /para-profissionais : Information dedicated to professionals joining the platform.
+
+## Values
+Safety, consent, and respect are the core principles of BDSMBRAZIL. The platform strongly emphasizes verification to ensure authenticity and a secure environment for all users.
