@@ -1,21 +1,21 @@
-# BDSMBRAZIL
+# Portal das Dominatrix (BDSMBRAZIL)
 
-## Introduction
-BDSMBRAZIL is the premier BDSM portal in Brazil. It is a directory and platform dedicated to connecting users with verified professionals and providing a safe, consensual environment.
+## Introdução
+O Portal das Dominatrix (BDSMBRAZIL) é o principal e mais seguro portal BDSM do Brasil. Somos um diretório exclusivo e uma plataforma dedicada a conectar usuários a profissionais verificadas, garantindo um ambiente de respeito, segurança e consenso absoluto.
 
-## Overview
-This platform allows users to browse verified professional profiles, find information about the community, and manage their own profiles securely.
+## Visão Geral
+Nossa plataforma permite que os usuários explorem perfis de profissionais rigorosamente verificadas, encontrem informações detalhadas sobre a comunidade BDSM e gerenciem seus próprios perfis com total privacidade e segurança. Oferecemos uma vitrine premium para profissionais que buscam excelência e visibilidade.
 
-## Main Sections
-- / : Homepage with the latest updates and featured profiles.
-- /explorar : Directory to explore and find professionals by location or specialty.
-- /perfis : Comprehensive list of professional profiles.
-- /premium : Premium features and subscription plans for enhanced visibility.
-- /sobre : Information about the platform, its mission, and its values.
-- /contato : Contact page for support and inquiries.
-- /faq : Frequently Asked Questions about the platform and its services.
-- /como-funciona : Guide on how the platform works.
-- /para-profissionais : Information dedicated to professionals joining the platform.
+## Seções Principais
+- / : Página inicial com as últimas atualizações, destaques e perfis em evidência.
+- /explorar : Diretório interativo para buscar e filtrar profissionais por localização, fetiches ou especialidades.
+- /perfis : Lista completa e detalhada de todos os perfis de profissionais cadastradas.
+- /premium : Planos de assinatura e recursos premium para profissionais que desejam maximizar seu alcance e visibilidade.
+- /sobre : Informações institucionais sobre a plataforma, nossa missão, visão e compromisso com a comunidade.
+- /contato : Canal direto de comunicação para suporte, dúvidas e parcerias.
+- /faq : Perguntas Frequentes (FAQ) para esclarecer as principais dúvidas sobre o uso da plataforma.
+- /como-funciona : Guia passo a passo explicando detalhadamente o funcionamento do portal para usuários e profissionais.
+- /para-profissionais : Seção exclusiva com vantagens, diretrizes e informações para profissionais que desejam se juntar à nossa plataforma.
 
-## Values
-Safety, consent, and respect are the core principles of BDSMBRAZIL. The platform strongly emphasizes verification to ensure authenticity and a secure environment for all users.
+## Nossos Valores
+Segurança, Consenso e Respeito são os pilares inegociáveis do Portal das Dominatrix. A plataforma enfatiza fortemente processos de verificação rigorosos para assegurar a autenticidade dos perfis e manter um ambiente seguro, ético e livre de riscos para todos os nossos usuários e profissionais.
