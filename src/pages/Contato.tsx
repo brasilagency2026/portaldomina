@@ -12,8 +12,8 @@ const contactInfo = [
   {
     icon: Mail,
     label: "E-mail",
-    value: "portaldomina@bdsmbrazil.com.br",
-    href: "mailto:portaldomina@bdsmbrazil.com.br",
+    value: "contato@bdsmbrazil.com.br",
+    href: "mailto:contato@bdsmbrazil.com.br",
   },
   {
     icon: Phone,
