@@ -1,6 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Mail, Phone, MapPin, Building, Facebook, Instagram, MessageCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Building, Instagram, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const contactInfo = [
@@ -30,12 +30,6 @@ const socialLinks = [
     label: "Instagram",
     value: "@bd.smbrazil",
     href: "https://www.instagram.com/bd.smbrazil/",
-  },
-  {
-    icon: Facebook,
-    label: "Facebook",
-    value: "eros.domina.5",
-    href: "https://www.facebook.com/eros.domina.5",
   },
 ];
 
