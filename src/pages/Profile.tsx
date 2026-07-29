@@ -15,9 +15,25 @@ const ICON_MAP: Record<string, any> = {
   "Eventos": PartyPopper
 };
 
+function normalizeLocation(location: string) {
+  const normalized = location.replace(/\s+/g, " ").trim();
+  const translated = normalized
+    .replace(/État de|État du/gi, "Estado de")
+    .replace(/Brésil/gi, "Brasil")
+    .replace(/Brasil\/ ?Brasil/gi, "Brasil");
+
+  const citySegment = translated.split(/,|-/)[0].trim();
+  return citySegment.replace(/^Estado\s+(de|do)\s+/i, "");
+}
+
 // Vérifie si c'est un UUID valide
 const isUUID = (str: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+function truncateText(text: string, maxLength: number) {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trim()}…`;
+}
 
 const Profile = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -78,7 +94,7 @@ const Profile = () => {
     ? `${profile.nome}${city ? ` - ${city}` : ""} | Rainha Dominadora BDSM`
     : "Rainha Dominadora BDSM";
   const ogDescription = profile
-    ? `Rainha Dominadora BDSM ${profile.nome}${city ? ` em ${city}` : ""}. ${profile.bio ? (profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")) : "Perfil verificado com fotos, serviços e contato."}`
+    ? truncateText(`Rainha Dominadora BDSM ${profile.nome}${city ? ` em ${city}` : ""}. ${profile.bio || "Perfil verificado com fotos, serviços e contato."}`, 160)
     : "Rainha Dominadora BDSM. Perfil verificado com fotos, serviços e contato.";
   const ogUrl = `https://bdsmbrazil.com.br/profile/${profileSlug}`;
 
@@ -170,7 +186,7 @@ const Profile = () => {
                 <h1 className="font-display text-4xl md:text-5xl font-bold mb-2 neon-text">{profile.nome}</h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="w-4 h-4 text-primary" />
-                  <span>{profile.localizacao || "Localização não informada"}</span>
+                  <span>{displayLocation}</span>
                 </div>
               </div>
 

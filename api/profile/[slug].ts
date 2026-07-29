@@ -52,6 +52,11 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+function truncateText(text: string, maxLength: number) {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trim()}…`;
+}
+
 function normalizeLocation(location: string) {
   const normalized = location.replace(/\s+/g, " ").trim();
   const translated = normalized
@@ -67,10 +72,8 @@ function getProfileMeta(profile: any, identifier: string) {
   const name = profile?.nome || "Profissional BDSMBRAZIL";
   const rawLocation = profile?.localizacao || profile?.cidade || "";
   const city = rawLocation ? normalizeLocation(rawLocation) : "";
-  const bioSnippet = profile?.bio
-    ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
-    : "Perfil verificado com fotos, serviços e contato.";
-  const bio = `Rainha Dominadora BDSM ${name}${city ? ` em ${city}` : ""}. ${bioSnippet}`;
+  const bioText = `Rainha Dominadora BDSM ${name}${city ? ` em ${city}` : ""}. ${profile?.bio || "Perfil verificado com fotos, serviços e contato."}`;
+  const bio = truncateText(bioText, 160);
 
   let image = `${SITE_URL}/banner.png`;
   if (Array.isArray(profile?.fotos) && profile.fotos.length > 0) {
