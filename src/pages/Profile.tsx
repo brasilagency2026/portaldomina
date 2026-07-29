@@ -30,9 +30,22 @@ function normalizeLocation(location: string) {
 const isUUID = (str: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
+function normalizeDescription(text: string) {
+  const cleaned = text
+    .replace(/\s+/g, ' ')
+    .replace(/\.\.+/g, '.')
+    .replace(/\s+\./g, '.')
+    .replace(/\s+,$/g, ',')
+    .replace(/\.+$/g, '.')
+    .trim();
+  return cleaned.replace(/\.?$/, '');
+}
+
 function truncateText(text: string, maxLength: number) {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength - 1).trim()}…`;
+  const normalized = normalizeDescription(text);
+  if (normalized.length <= maxLength) return normalized;
+  const truncated = normalized.slice(0, maxLength - 1).trim();
+  return `${truncated.replace(/[\.,;:!?]+$/, '')}…`;
 }
 
 const Profile = () => {

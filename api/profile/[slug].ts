@@ -52,9 +52,22 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+function normalizeDescription(text: string) {
+  const cleaned = text
+    .replace(/\s+/g, ' ')
+    .replace(/\.\.+/g, '.')
+    .replace(/\s+\./g, '.')
+    .replace(/\s+,$/g, ',')
+    .replace(/\.+$/g, '.')
+    .trim();
+  return cleaned.replace(/\.?$/, '');
+}
+
 function truncateText(text: string, maxLength: number) {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength - 1).trim()}…`;
+  const normalized = normalizeDescription(text);
+  if (normalized.length <= maxLength) return normalized;
+  const truncated = normalized.slice(0, maxLength - 1).trim();
+  return `${truncated.replace(/[\.,;:!?]+$/, '')}…`;
 }
 
 function normalizeLocation(location: string) {
