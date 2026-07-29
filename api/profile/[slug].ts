@@ -52,12 +52,21 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+function normalizeLocation(location: string) {
+  const normalized = location.replace(/\s+/g, " ").trim();
+  const translated = normalized
+    .replace(/État de|État du/gi, "Estado de")
+    .replace(/Brésil/gi, "Brasil")
+    .replace(/Brasil\/ ?Brasil/gi, "Brasil");
+
+  const citySegment = translated.split(/,|-/)[0].trim();
+  return citySegment.replace(/^Estado\s+(de|do)\s+/i, "");
+}
+
 function getProfileMeta(profile: any, identifier: string) {
   const name = profile?.nome || "Profissional BDSMBRAZIL";
   const rawLocation = profile?.localizacao || profile?.cidade || "";
-  const city = rawLocation
-    ? rawLocation.split(/,|-/)[0].trim().replace(/^Estado (de|do)\s+/i, "")
-    : "";
+  const city = rawLocation ? normalizeLocation(rawLocation) : "";
   const bioSnippet = profile?.bio
     ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
     : "Perfil verificado com fotos, serviços e contato.";
