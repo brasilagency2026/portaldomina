@@ -54,7 +54,10 @@ function escapeHtml(str: string): string {
 
 function getProfileMeta(profile: any, identifier: string) {
   const name = profile?.nome || "Profissional BDSMBRAZIL";
-  const city = profile?.localizacao || profile?.cidade || "";
+  const rawLocation = profile?.localizacao || profile?.cidade || "";
+  const city = rawLocation
+    ? rawLocation.split(/,|-/)[0].trim().replace(/^Estado (de|do)\s+/i, "")
+    : "";
   const bioSnippet = profile?.bio
     ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
     : "Perfil verificado com fotos, serviços e contato.";

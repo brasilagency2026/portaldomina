@@ -69,8 +69,11 @@ const Profile = () => {
   };
 
   const profileSlug = profile?.slug || profile?.id;
+  const rawLocation = profile?.localizacao || profile?.cidade || "";
+  const city = rawLocation
+    ? rawLocation.split(/,|-/)[0].trim().replace(/^Estado (de|do)\s+/i, "")
+    : "";
   const ogImage = profile?.fotos?.[0] || profile?.foto_url || "https://dominas.bdsmbrazil.com.br/banner.png";
-  const city = profile?.localizacao || profile?.cidade || "";
   const ogTitle = profile
     ? `${profile.nome}${city ? ` - ${city}` : ""} | Rainha Dominadora BDSM`
     : "Rainha Dominadora BDSM";
