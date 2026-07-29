@@ -54,9 +54,11 @@ function escapeHtml(str: string): string {
 
 function getProfileMeta(profile: any, identifier: string) {
   const name = profile?.nome || "Profissional BDSMBRAZIL";
-  const bio = profile?.bio
+  const city = profile?.localizacao || profile?.cidade || "";
+  const bioSnippet = profile?.bio
     ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
-    : "Profissional verificada no maior portal BDSM do Brasil.";
+    : "Perfil verificado com fotos, serviços e contato.";
+  const bio = `Rainha Dominadora BDSM ${name}${city ? ` em ${city}` : ""}. ${bioSnippet}`;
 
   let image = `${SITE_URL}/banner.png`;
   if (Array.isArray(profile?.fotos) && profile.fotos.length > 0) {
@@ -68,7 +70,7 @@ function getProfileMeta(profile: any, identifier: string) {
 
   const slug = profile?.slug || identifier;
   const url = `${SITE_URL}/profile/${slug}`;
-  const title = `${name} | BDSMBRAZIL`;
+  const title = `${name}${city ? ` - ${city}` : ""} | Rainha Dominadora BDSM`;
 
   return { name, bio, image, url, title };
 }
