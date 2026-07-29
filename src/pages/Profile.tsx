@@ -70,10 +70,13 @@ const Profile = () => {
 
   const profileSlug = profile?.slug || profile?.id;
   const ogImage = profile?.fotos?.[0] || profile?.foto_url || "https://dominas.bdsmbrazil.com.br/banner.png";
-  const ogTitle = profile ? `${profile.nome} | BDSMBRAZIL` : "BDSMBRAZIL";
-  const ogDescription = profile?.bio
-    ? profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")
-    : "Profissional verificada no maior portal BDSM do Brasil.";
+  const city = profile?.localizacao || profile?.cidade || "";
+  const ogTitle = profile
+    ? `${profile.nome}${city ? ` - ${city}` : ""} | Rainha Dominadora BDSM`
+    : "Rainha Dominadora BDSM";
+  const ogDescription = profile
+    ? `Rainha Dominadora BDSM ${profile.nome}${city ? ` em ${city}` : ""}. ${profile.bio ? (profile.bio.slice(0, 200) + (profile.bio.length > 200 ? "..." : "")) : "Perfil verificado com fotos, serviços e contato."}`
+    : "Rainha Dominadora BDSM. Perfil verificado com fotos, serviços e contato.";
   const ogUrl = `https://bdsmbrazil.com.br/profile/${profileSlug}`;
 
   if (loading) return (
